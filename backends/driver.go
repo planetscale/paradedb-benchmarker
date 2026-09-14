@@ -38,6 +38,7 @@ type BackendConfig struct {
 var (
 	backendConfigs   = make(map[string]BackendConfig)
 	backendConfigsMu sync.RWMutex
+	indexIOResets    sync.Map
 )
 
 // Register registers a backend with all its configuration.
@@ -152,16 +153,62 @@ type Driver interface {
 	CaptureConfig(ctx context.Context, backendName string)
 }
 
+// IndexIOStats is the latest cumulative index I/O snapshot for a backend.
+type IndexIOStats = metrics.IndexIOStats
+
+// IndexIOStatsProvider is an optional capability implemented by drivers that
+// can report PostgreSQL search-index block statistics.
+type IndexIOStatsProvider interface {
+	IndexIOStatsEnabled() bool
+	IndexIOStatsIdentity() string
+	ResetIndexIOStats(ctx context.Context) error
+	ReadIndexIOStats(ctx context.Context) (IndexIOStats, error)
+}
+
+// WALPositionProvider is an optional capability implemented by PostgreSQL
+// drivers that can report the server's current WAL insert byte position.
+type WALPositionProvider interface {
+	ReadWALPosition(ctx context.Context) (uint64, error)
+}
+
+// PostgresDiagnosticsSample is one cumulative PostgreSQL diagnostics snapshot.
+type PostgresDiagnosticsSample = metrics.PostgresDiagnosticsSample
+
+// PostgresDiagnosticsProvider is an optional capability implemented by
+// PostgreSQL drivers that expose phase-scoped I/O, WAL, wait, and maintenance
+// telemetry.
+type PostgresDiagnosticsProvider interface {
+	ResetPostgresDiagnostics(ctx context.Context) error
+	ReadPostgresDiagnostics(ctx context.Context) (PostgresDiagnosticsSample, error)
+}
+
+// RandomDocumentUpdater is an optional driver capability used by benchmark
+// suites that exercise index maintenance alongside queries. Implementations
+// must append exactly one ASCII space to the target document's body and return
+// either zero or one affected document.
+type RandomDocumentUpdater interface {
+	AppendSpaceToRandomDocument(ctx context.Context, target string) (int, error)
+}
+
+type indexIOReset struct {
+	once sync.Once
+	err  error
+}
+
 // DriverFactory creates a driver from a connection string.
 type DriverFactory func(connString string) (Driver, error)
 
 // K6Client wraps a Driver with k6 metrics emission.
 type K6Client struct {
-	driver      Driver
-	vu          modules.VU
-	backend     string
-	timeout     time.Duration
-	initialized bool // Track if backend_init has been emitted
+	driver                      Driver
+	vu                          modules.VU
+	backend                     string
+	timeout                     time.Duration
+	measurementDeadlineProvider func() (time.Time, bool)
+	phaseQueryStateProvider     func() (time.Time, bool, bool)
+	updateWorkload              *metrics.UpdateWorkload
+	initialized                 bool // Track if backend_init has been emitted
+	external                    bool // Externally managed services must retain server statistics.
 }
 
 // NewK6Client creates a k6 client that wraps a driver.
@@ -170,10 +217,198 @@ func NewK6Client(vu modules.VU, driver Driver, backend string) *K6Client {
 	return &K6Client{driver: driver, vu: vu, backend: backend, timeout: 0}
 }
 
+// SetExternal prevents statistics resets on externally managed services.
+// Index I/O is measured relative to a shared, in-process phase baseline instead.
+func (c *K6Client) SetExternal(external bool) {
+	c.external = external
+}
+
+// IndexIOStatsEnabled reports whether this client's driver opted into index
+// I/O collection.
+func (c *K6Client) IndexIOStatsEnabled() bool {
+	provider, ok := c.driver.(IndexIOStatsProvider)
+	return ok && provider.IndexIOStatsEnabled()
+}
+
+// ResetIndexIOStats resets a datasource once per k6 process. Drivers are
+// instantiated per VU, so the datasource identity prevents late-created VUs
+// from resetting counters after a workload has begun.
+func (c *K6Client) ResetIndexIOStats(ctx context.Context) (bool, error) {
+	provider, ok := c.driver.(IndexIOStatsProvider)
+	if !ok || !provider.IndexIOStatsEnabled() {
+		return false, nil
+	}
+
+	identity := provider.IndexIOStatsIdentity()
+	if identity == "" {
+		return true, fmt.Errorf("index I/O stats identity is empty")
+	}
+
+	var key interface{} = identity
+	if c.external {
+		key = externalIndexIOKey{identity: identity, backend: c.backend}
+	}
+	value, _ := indexIOResets.LoadOrStore(key, &indexIOReset{})
+	reset := value.(*indexIOReset)
+	reset.once.Do(func() {
+		reset.err = c.resetIndexIOStats(ctx, provider)
+	})
+	if reset.err != nil {
+		return true, reset.err
+	}
+
+	metrics.RegisterInitialIndexIOStats(c.backend, IndexIOStats{
+		Read: "0B",
+		Hit:  "0B",
+	})
+	return true, nil
+}
+
+// ResetIndexIOStatsNow resets index I/O counters without the initialization
+// guard used by ResetIndexIOStats.
+func (c *K6Client) ResetIndexIOStatsNow(ctx context.Context) (bool, error) {
+	provider, ok := c.driver.(IndexIOStatsProvider)
+	if !ok || !provider.IndexIOStatsEnabled() {
+		return false, nil
+	}
+	if err := c.resetIndexIOStats(ctx, provider); err != nil {
+		return true, err
+	}
+	metrics.RegisterIndexIOStats(c.backend, IndexIOStats{Read: "0B", Hit: "0B"})
+	return true, nil
+}
+
+// ReadIndexIOStats reads the current cumulative snapshot without emitting
+// benchmark query metrics.
+func (c *K6Client) ReadIndexIOStats(ctx context.Context) (IndexIOStats, bool, error) {
+	provider, ok := c.driver.(IndexIOStatsProvider)
+	if !ok || !provider.IndexIOStatsEnabled() {
+		return IndexIOStats{}, false, nil
+	}
+	if c.external {
+		stats, err := c.readExternalIndexIOStats(ctx, provider)
+		return stats, true, err
+	}
+	stats, err := provider.ReadIndexIOStats(ctx)
+	return stats, true, err
+}
+
+// ReadWALPosition reads the current server WAL position without emitting
+// benchmark metrics.
+func (c *K6Client) ReadWALPosition(ctx context.Context) (uint64, bool, error) {
+	provider, ok := c.driver.(WALPositionProvider)
+	if !ok {
+		return 0, false, nil
+	}
+	position, err := provider.ReadWALPosition(ctx)
+	return position, true, err
+}
+
+// ResetPostgresDiagnostics resets cumulative PostgreSQL diagnostics counters.
+func (c *K6Client) ResetPostgresDiagnostics(ctx context.Context) (bool, error) {
+	provider, ok := c.driver.(PostgresDiagnosticsProvider)
+	if !ok {
+		return false, nil
+	}
+	if c.external {
+		return true, nil
+	}
+	return true, provider.ResetPostgresDiagnostics(ctx)
+}
+
+// ReadPostgresDiagnostics reads one cumulative PostgreSQL diagnostics snapshot.
+func (c *K6Client) ReadPostgresDiagnostics(ctx context.Context) (PostgresDiagnosticsSample, bool, error) {
+	provider, ok := c.driver.(PostgresDiagnosticsProvider)
+	if !ok {
+		return PostgresDiagnosticsSample{}, false, nil
+	}
+	sample, err := provider.ReadPostgresDiagnostics(ctx)
+	return sample, true, err
+}
+
+// EnableRandomDocumentUpdates attaches the process-wide workload state shared
+// by all clients for this backend alias.
+func (c *K6Client) EnableRandomDocumentUpdates(workload *metrics.UpdateWorkload) {
+	c.updateWorkload = workload
+}
+
+// RandomDocumentUpdatesEnabled reports whether the driver supports the
+// requested mutation.
+func (c *K6Client) RandomDocumentUpdatesEnabled() bool {
+	_, ok := c.driver.(RandomDocumentUpdater)
+	return ok
+}
+
+func (c *K6Client) appendSpaceToRandomDocument(target string) (int, float64, context.Context, error) {
+	updater, ok := c.driver.(RandomDocumentUpdater)
+	if !ok {
+		return 0, 0, context.Background(), fmt.Errorf("backend %s does not support random document updates", c.backend)
+	}
+
+	ctx := context.Background()
+	metricCtx := ctx
+	if c.vu != nil {
+		if vuContext := c.vu.Context(); vuContext != nil {
+			ctx = vuContext
+			metricCtx = vuContext
+		}
+	}
+	timeout := c.timeout
+	if timeout <= 0 {
+		timeout = 15 * time.Second
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	start := time.Now()
+	count, err := updater.AppendSpaceToRandomDocument(ctx, target)
+	latencyMs := float64(time.Since(start).Microseconds()) / 1000.0
+	if err == nil && count != 1 {
+		err = fmt.Errorf("backend %s updated %d random documents, want exactly 1", c.backend, count)
+	}
+	return count, latencyMs, metricCtx, err
+}
+
+// AppendSpaceToRandomDocument performs one datasource-native mutation and
+// emits update metrics without creating a query scenario/run.
+func (c *K6Client) AppendSpaceToRandomDocument(target string) (int, error) {
+	count, latencyMs, metricCtx, err := c.appendSpaceToRandomDocument(target)
+	result := metrics.UpdateResult{Rows: count, LatencyMs: latencyMs}
+	if err != nil {
+		result.Error = err.Error()
+	} else if c.updateWorkload != nil {
+		c.updateWorkload.RecordCompletedUpdate()
+	}
+	if c.vu != nil {
+		result.Emit(metricCtx, c.vu, c.backend)
+	}
+	return count, err
+}
+
+// PrewarmAppendSpaceToRandomDocument performs the same mutation without
+// emitting benchmark metrics or incrementing the measured update count.
+func (c *K6Client) PrewarmAppendSpaceToRandomDocument(target string) (int, error) {
+	count, _, _, err := c.appendSpaceToRandomDocument(target)
+	return count, err
+}
+
 // SetTimeout sets the query timeout duration.
 // Use 0 to disable timeout (default).
 func (c *K6Client) SetTimeout(seconds int) {
 	c.timeout = time.Duration(seconds) * time.Second
+}
+
+// SetMeasurementDeadlineProvider supplies the active benchmark phase deadline.
+// Queries inherit it, while prewarm and other non-measured operations do not.
+func (c *K6Client) SetMeasurementDeadlineProvider(provider func() (time.Time, bool)) {
+	c.measurementDeadlineProvider = provider
+}
+
+// SetPhaseQueryStateProvider supplies the active prewarm/measurement state for
+// a phase-coordinated query stream. Coordinated prewarm calls use Query just
+// like measured calls, but inherit the prewarm deadline and emit no metrics.
+func (c *K6Client) SetPhaseQueryStateProvider(provider func() (time.Time, bool, bool)) {
+	c.phaseQueryStateProvider = provider
 }
 
 // emitInitMetrics emits initialization metrics on first call to signal dashboard.
@@ -182,17 +417,35 @@ func (c *K6Client) emitInitMetrics() {
 		return
 	}
 	c.initialized = true
+	if c.vu == nil {
+		return
+	}
 	metrics.EmitBackendInit(c.vu, c.backend)
 	metrics.EmitScenarioStarted(c.vu, c.backend)
 }
 
 // Query executes a query and emits metrics.
 func (c *K6Client) Query(query string, args ...any) map[string]interface{} {
+	if c.phaseQueryStateProvider != nil {
+		if deadline, measuring, coordinated := c.phaseQueryStateProvider(); coordinated && !measuring {
+			return c.queryWithoutMetrics(deadline, query, args...)
+		}
+	}
+
 	c.emitInitMetrics()
 
 	ctx := context.Background()
-	var cancel context.CancelFunc
+	measurementDeadline := time.Time{}
+	if c.measurementDeadlineProvider != nil {
+		if deadline, ok := c.measurementDeadlineProvider(); ok {
+			measurementDeadline = deadline
+			var cancel context.CancelFunc
+			ctx, cancel = context.WithDeadline(ctx, deadline)
+			defer cancel()
+		}
+	}
 	if c.timeout > 0 {
+		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(ctx, c.timeout)
 		defer cancel()
 	}
@@ -209,10 +462,15 @@ func (c *K6Client) Query(query string, args ...any) map[string]interface{} {
 	metrics.CaptureQueryPattern(c.vu, c.backend, queryPattern)
 	metrics.CaptureScenarioInfo(c.vu)
 
-	start := time.Now()
-	hits, err := c.driver.Query(ctx, query, args...)
-	latencyMs := float64(time.Since(start).Microseconds()) / 1000.0
+	hits, latencyMs, err := c.executeQuery(ctx, query, args...)
 
+	if !measurementDeadline.IsZero() && !time.Now().Before(measurementDeadline) {
+		return map[string]interface{}{
+			"hits":      0,
+			"latencyMs": latencyMs,
+			"error":     "benchmark measurement deadline reached",
+		}
+	}
 	if err != nil {
 		fmt.Printf("[%s] query error: %v\n", c.backend, err)
 		return map[string]interface{}{
@@ -221,10 +479,60 @@ func (c *K6Client) Query(query string, args ...any) map[string]interface{} {
 			"error":     err.Error(),
 		}
 	}
-
 	result := &metrics.QueryResult{Hits: int64(hits), LatencyMs: latencyMs}
-	result.Emit(ctx, c.vu, c.backend)
+	if c.vu != nil {
+		result.Emit(ctx, c.vu, c.backend)
+	}
 	return result.ToMap()
+}
+
+// Prewarm executes a query without emitting benchmark metrics.
+func (c *K6Client) Prewarm(query string, args ...any) map[string]interface{} {
+	return c.queryWithoutMetrics(time.Time{}, query, args...)
+}
+
+func (c *K6Client) queryWithoutMetrics(deadline time.Time, query string, args ...any) map[string]interface{} {
+	ctx := context.Background()
+	if c.vu != nil {
+		if vuContext := c.vu.Context(); vuContext != nil {
+			ctx = vuContext
+		}
+	}
+	if !deadline.IsZero() {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithDeadline(ctx, deadline)
+		defer cancel()
+	}
+	var cancel context.CancelFunc
+	if c.timeout > 0 {
+		ctx, cancel = context.WithTimeout(ctx, c.timeout)
+		defer cancel()
+	}
+
+	hits, latencyMs, err := c.executeQuery(ctx, query, args...)
+	if !deadline.IsZero() && !time.Now().Before(deadline) {
+		return map[string]interface{}{
+			"hits":            0,
+			"latencyMs":       latencyMs,
+			"deadlineReached": true,
+		}
+	}
+	if err != nil {
+		return map[string]interface{}{
+			"hits":      0,
+			"latencyMs": latencyMs,
+			"error":     err.Error(),
+		}
+	}
+	result := &metrics.QueryResult{Hits: int64(hits), LatencyMs: latencyMs}
+	return result.ToMap()
+}
+
+func (c *K6Client) executeQuery(ctx context.Context, query string, args ...any) (int, float64, error) {
+	start := time.Now()
+	hits, err := c.driver.Query(ctx, query, args...)
+	latencyMs := float64(time.Since(start).Microseconds()) / 1000.0
+	return hits, latencyMs, err
 }
 
 // InsertBatch inserts documents and emits metrics.

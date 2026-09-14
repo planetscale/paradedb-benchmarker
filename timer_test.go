@@ -107,3 +107,19 @@ func TestZeroGap(t *testing.T) {
 		t.Fatalf("TotalDuration() = %q, want %q", got, "60s")
 	}
 }
+
+func TestDelayedDurationStartsFinalSnapshotAfterWorkload(t *testing.T) {
+	got, err := delayedDuration("2m5s")
+	if err != nil {
+		t.Fatalf("delayed duration: %v", err)
+	}
+	if got != "2m6s" {
+		t.Fatalf("delayed duration = %q, want 2m6s", got)
+	}
+}
+
+func TestDelayedDurationRejectsInvalidDuration(t *testing.T) {
+	if _, err := delayedDuration("not-a-duration"); err == nil {
+		t.Fatal("expected invalid duration error")
+	}
+}

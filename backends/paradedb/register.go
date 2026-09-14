@@ -24,6 +24,7 @@ func New(connString string) (backends.Driver, error) {
 	}
 
 	pgDriver := driver.(*postgres.Driver)
+	pgDriver.SetIndexIOStatsAccessMethods("bm25")
 
 	// Add ParadeDB-specific GUCs to capture
 	pgDriver.SetExtraGUCs([]string{

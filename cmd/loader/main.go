@@ -143,6 +143,7 @@ Options:
 
 Environment Variables:
   PARADEDB_URL       ParadeDB connection string
+  PG_TEXTSEARCH_URL  pg_textsearch connection string
   POSTGRES_URL       PostgreSQL connection string
   ELASTICSEARCH_URL  Elasticsearch address
   OPENSEARCH_URL     OpenSearch address

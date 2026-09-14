@@ -3,13 +3,16 @@ package metrics
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -41,7 +44,45 @@ var (
 	// dashboard JSON. The frontend renders them as Dataset / Script tabs.
 	runCapture   = make(map[string]string)
 	runCaptureMu sync.RWMutex
+
+	// Latest PostgreSQL index I/O snapshot per backend alias.
+	indexIOStats   = make(map[string]IndexIOStats)
+	indexIOStatsMu sync.RWMutex
 )
+
+// IndexIOStats is the cumulative PostgreSQL search-index I/O since the most
+// recent statistics reset. Read and Hit are formatted by pg_size_pretty().
+type IndexIOStats struct {
+	ReadBytes int64
+	HitBytes  int64
+	Read      string
+	Hit       string
+}
+
+// RegisterIndexIOStats replaces the latest snapshot for a backend alias.
+func RegisterIndexIOStats(backend string, stats IndexIOStats) {
+	indexIOStatsMu.Lock()
+	defer indexIOStatsMu.Unlock()
+	indexIOStats[backend] = stats
+}
+
+// RegisterInitialIndexIOStats stores a reset baseline without replacing a
+// snapshot that a collector has already populated.
+func RegisterInitialIndexIOStats(backend string, stats IndexIOStats) {
+	indexIOStatsMu.Lock()
+	defer indexIOStatsMu.Unlock()
+	if _, exists := indexIOStats[backend]; !exists {
+		indexIOStats[backend] = stats
+	}
+}
+
+// GetIndexIOStats returns the latest snapshot for a backend alias.
+func GetIndexIOStats(backend string) (IndexIOStats, bool) {
+	indexIOStatsMu.RLock()
+	defer indexIOStatsMu.RUnlock()
+	stats, ok := indexIOStats[backend]
+	return stats, ok
+}
 
 // RegisterRunCapture stores a run-level text artifact (e.g. "dataset.yaml" or
 // "script.js") for later inclusion in the dashboard JSON. Empty values are
@@ -198,6 +239,8 @@ type Collector struct {
 	// Previous stats for CPU delta calculation (shared across calls)
 	prevStats map[string]*rawDockerStats
 	statsMu   sync.Mutex
+	paused    map[string]bool
+	stopped   map[string]bool
 }
 
 // ContainerStats holds calculated container stats.
@@ -232,6 +275,75 @@ type dockerStats struct {
 	} `json:"memory_stats"`
 }
 
+type dockerCLIConfig struct {
+	CurrentContext string `json:"currentContext"`
+}
+
+type dockerContextMetadata struct {
+	Endpoints map[string]struct {
+		Host string `json:"Host"`
+	} `json:"Endpoints"`
+}
+
+func dockerConfigDir() string {
+	if dir := os.Getenv("DOCKER_CONFIG"); dir != "" {
+		return dir
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	return filepath.Join(home, ".docker")
+}
+
+func unixSocketPath(host string) string {
+	const prefix = "unix://"
+	if !strings.HasPrefix(host, prefix) {
+		return ""
+	}
+	return strings.TrimPrefix(host, prefix)
+}
+
+func contextDockerSocket(configDir, contextName string) string {
+	if configDir == "" || contextName == "" || contextName == "default" {
+		return ""
+	}
+	hash := sha256.Sum256([]byte(contextName))
+	metaPath := filepath.Join(configDir, "contexts", "meta", fmt.Sprintf("%x", hash), "meta.json")
+	data, err := os.ReadFile(metaPath)
+	if err != nil {
+		return ""
+	}
+	var metadata dockerContextMetadata
+	if json.Unmarshal(data, &metadata) != nil {
+		return ""
+	}
+	return unixSocketPath(metadata.Endpoints["docker"].Host)
+}
+
+func resolveDockerSocket() string {
+	configDir := dockerConfigDir()
+	if contextName := os.Getenv("DOCKER_CONTEXT"); contextName != "" {
+		if socket := contextDockerSocket(configDir, contextName); socket != "" {
+			return socket
+		}
+	}
+	if socket := unixSocketPath(os.Getenv("DOCKER_HOST")); socket != "" {
+		return socket
+	}
+
+	data, err := os.ReadFile(filepath.Join(configDir, "config.json"))
+	if err == nil {
+		var config dockerCLIConfig
+		if json.Unmarshal(data, &config) == nil {
+			if socket := contextDockerSocket(configDir, config.CurrentContext); socket != "" {
+				return socket
+			}
+		}
+	}
+	return "/var/run/docker.sock"
+}
+
 // NewCollector creates a new metrics collector.
 func NewCollector(vu modules.VU, config map[string]interface{}) *Collector {
 	// Register metrics once during init phase.
@@ -252,11 +364,13 @@ func NewCollector(vu modules.VU, config map[string]interface{}) *Collector {
 		}
 	}
 
-	// Create HTTP client for Docker socket with short timeout
+	// Create HTTP client for the active Docker context's socket with short timeout.
+	dockerSocket := resolveDockerSocket()
+	dialer := &net.Dialer{}
 	httpClient := &http.Client{
 		Transport: &http.Transport{
-			DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
-				return net.Dial("unix", "/var/run/docker.sock")
+			DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
+				return dialer.DialContext(ctx, "unix", dockerSocket)
 			},
 		},
 		Timeout: 2 * time.Second,
@@ -266,6 +380,8 @@ func NewCollector(vu modules.VU, config map[string]interface{}) *Collector {
 		vu:         vu,
 		containers: containers,
 		prevStats:  make(map[string]*rawDockerStats),
+		paused:     make(map[string]bool),
+		stopped:    make(map[string]bool),
 		httpClient: httpClient,
 	}
 }
@@ -278,6 +394,86 @@ func (c *Collector) Start() map[string]interface{} {
 // Stop is a no-op for compatibility.
 func (c *Collector) Stop() map[string]interface{} {
 	return map[string]interface{}{"status": "stopped"}
+}
+
+// PauseContainer freezes a container after its benchmark phase so background
+// work cannot interfere with the next backend.
+func (c *Collector) PauseContainer(container string) error {
+	if err := c.setContainerPaused(container, true); err != nil {
+		return err
+	}
+	c.statsMu.Lock()
+	if c.paused == nil {
+		c.paused = make(map[string]bool)
+	}
+	c.paused[container] = true
+	c.statsMu.Unlock()
+	return nil
+}
+
+// UnpauseContainer resumes a container previously frozen by PauseContainer.
+func (c *Collector) UnpauseContainer(container string) error {
+	if err := c.setContainerPaused(container, false); err != nil {
+		return err
+	}
+	c.statsMu.Lock()
+	delete(c.paused, container)
+	c.statsMu.Unlock()
+	return nil
+}
+
+// StopContainer gracefully stops a completed benchmark container and removes
+// it from subsequent metric collection. Docker honors the image's configured
+// stop signal; PostgreSQL images use SIGINT for a fast, clean shutdown.
+func (c *Collector) StopContainer(container string) error {
+	endpoint := fmt.Sprintf("http://localhost/containers/%s/stop?t=600", url.PathEscape(container))
+	req, err := http.NewRequest(http.MethodPost, endpoint, nil)
+	if err != nil {
+		return err
+	}
+	controlClient := *c.httpClient
+	controlClient.Timeout = 610 * time.Second
+	resp, err := controlClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusNotModified {
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
+		return fmt.Errorf("docker stop %s failed with status %d: %s", container, resp.StatusCode, strings.TrimSpace(string(body)))
+	}
+
+	c.statsMu.Lock()
+	if c.stopped == nil {
+		c.stopped = make(map[string]bool)
+	}
+	c.stopped[container] = true
+	c.statsMu.Unlock()
+	return nil
+}
+
+func (c *Collector) setContainerPaused(container string, paused bool) error {
+	action := "unpause"
+	if paused {
+		action = "pause"
+	}
+	endpoint := fmt.Sprintf("http://localhost/containers/%s/%s", url.PathEscape(container), action)
+	req, err := http.NewRequest(http.MethodPost, endpoint, nil)
+	if err != nil {
+		return err
+	}
+	controlClient := *c.httpClient
+	controlClient.Timeout = 30 * time.Second
+	resp, err := controlClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
+		return fmt.Errorf("docker %s %s failed with status %d: %s", action, container, resp.StatusCode, strings.TrimSpace(string(body)))
+	}
+	return nil
 }
 
 // containerResult holds the result of fetching stats for a single container.
@@ -303,10 +499,11 @@ func (c *Collector) Collect() map[string]interface{} {
 	now := time.Now()
 	baseTags := state.Tags.GetCurrentValues()
 	results := make(map[string]interface{})
+	containers := c.activeContainers()
 
 	// Capture docker inspect info once per container (in parallel).
 	var infoWg sync.WaitGroup
-	for _, container := range c.containers {
+	for _, container := range containers {
 		containerInfoMu.Lock()
 		needsCapture := !infoCapture[container]
 		containerInfoMu.Unlock()
@@ -326,8 +523,8 @@ func (c *Collector) Collect() map[string]interface{} {
 	infoWg.Wait()
 
 	// Fetch stats for all containers in parallel
-	resultChan := make(chan containerResult, len(c.containers))
-	for _, container := range c.containers {
+	resultChan := make(chan containerResult, len(containers))
+	for _, container := range containers {
 		go func(cont string) {
 			stats, err := c.fetchAndCalculateStats(cont)
 			resultChan <- containerResult{container: cont, stats: stats, err: err}
@@ -335,7 +532,7 @@ func (c *Collector) Collect() map[string]interface{} {
 	}
 
 	// Collect results
-	for range c.containers {
+	for range containers {
 		res := <-resultChan
 		if res.err != nil {
 			results[res.container] = map[string]interface{}{"error": res.err.Error()}
@@ -363,6 +560,18 @@ func (c *Collector) Collect() map[string]interface{} {
 	}
 
 	return results
+}
+
+func (c *Collector) activeContainers() []string {
+	c.statsMu.Lock()
+	defer c.statsMu.Unlock()
+	active := make([]string, 0, len(c.containers))
+	for _, container := range c.containers {
+		if !c.paused[container] && !c.stopped[container] {
+			active = append(active, container)
+		}
+	}
+	return active
 }
 
 // fetchAndCalculateStats gets raw stats from Docker API and calculates CPU percentage.
@@ -429,7 +638,7 @@ func (c *Collector) fetchAndCalculateStats(container string) (*ContainerStats, e
 type dockerInspect struct {
 	Image  string `json:"Image"` // image SHA, e.g. "sha256:abc..."
 	Config struct {
-		Image string   `json:"Image"` // image tag, e.g. "paradedb/paradedb:v0.23.1"
+		Image string   `json:"Image"` // image tag, e.g. "paradedb/paradedb:v0.25.2"
 		Cmd   []string `json:"Cmd"`
 		Env   []string `json:"Env"`
 	} `json:"Config"`
