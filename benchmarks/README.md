@@ -27,10 +27,11 @@ PostgreSQL binary COPY or Elasticsearch bulk requests. PostgreSQL's generated
 
 Images are pinned by the Docker configuration. Each container defaults to 8 CPUs,
 with 64 GB of memory during `create` and 32 GB during `run`. Every PostgreSQL
-backend uses `shared_buffers=24GB`, `maintenance_work_mem=24GB`, and
-`max_parallel_workers_per_gather=2` for every target. These settings are passed
+backend defaults to `shared_buffers=24GB`, `maintenance_work_mem=24GB`,
+`max_parallel_maintenance_workers=8`, and `max_parallel_workers_per_gather=2`
+for every target. These settings are passed
 on the PostgreSQL command line, alongside the required extension preloads,
-so the worker limit overrides ParadeDB's CPU-based bootstrap value. Other
+so the worker limits override ParadeDB's CPU-based bootstrap values. Other
 tuning supplied by backend images still applies. The index definitions
 preserve the existing plain backend configurations: ParadeDB's
 default tokenizer with eight target segments, the PostgreSQL `simple` text
@@ -110,6 +111,7 @@ The Makefiles serialize `create`, `run`, and `clean` within each project.
 | `MEMORY`               | `64g` for `create`; `32g` otherwise      | Docker memory limit per backend; explicit overrides apply to either target         |
 | `SHARED_BUFFERS`       | `24GB`                                   | PostgreSQL shared buffers during both creation and benchmark runs                  |
 | `MAINTENANCE_WORK_MEM` | `24GB`                                   | PostgreSQL maintenance memory for every target                                     |
+| `MAX_PARALLEL_MAINTENANCE_WORKERS` | `8`                           | PostgreSQL parallel maintenance worker limit for every target                      |
 | `POSTGRES_SHM_SIZE`    | `16g`                                    | Docker `/dev/shm` capacity for PostgreSQL backends                                 |
 | `WORKERS`              | `1`                                      | Parallel workers during CSV loading                                                |
 | `BATCH_SIZE`           | `10000`                                  | Rows per load batch                                                                |

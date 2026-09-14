@@ -14,6 +14,8 @@ x-postgres: &postgres
       "-c",
       "maintenance_work_mem=${MAINTENANCE_WORK_MEM:-24GB}",
       "-c",
+      "max_parallel_maintenance_workers=${MAX_PARALLEL_MAINTENANCE_WORKERS:-8}",
+      "-c",
       "max_parallel_workers_per_gather=2",
     ]
   stop_grace_period: 10m
@@ -38,6 +40,8 @@ services:
         "-c",
         "maintenance_work_mem=${MAINTENANCE_WORK_MEM:-24GB}",
         "-c",
+        "max_parallel_maintenance_workers=${MAX_PARALLEL_MAINTENANCE_WORKERS:-8}",
+        "-c",
         "max_parallel_workers_per_gather=2",
         "-c",
         "shared_preload_libraries=pg_search,pg_cron",
@@ -59,6 +63,8 @@ services:
         "shared_buffers=${SHARED_BUFFERS:-24GB}",
         "-c",
         "maintenance_work_mem=${MAINTENANCE_WORK_MEM:-24GB}",
+        "-c",
+        "max_parallel_maintenance_workers=${MAX_PARALLEL_MAINTENANCE_WORKERS:-8}",
         "-c",
         "max_parallel_workers_per_gather=2",
         "-c",

@@ -38,6 +38,7 @@ create _create_backend: MEMORY := 64g
 endif
 SHARED_BUFFERS ?= 24GB
 MAINTENANCE_WORK_MEM ?= 24GB
+MAX_PARALLEL_MAINTENANCE_WORKERS ?= 8
 POSTGRES_SHM_SIZE ?= 16g
 WORKERS ?= 1
 BATCH_SIZE ?= 10000
@@ -51,7 +52,7 @@ K6 := $(REPO_ROOT)/k6
 export DATASET DATASET_DIR REPO_ROOT THIS_MAKEFILE CONFIG_DIR PROJECT STATE_DIR
 export DATA_GZ DATA_CSV CHECKSUMS QUERIES WORKLOAD QUERY_STYLE BACKENDS
 export VUS DURATION PREWARM COOLDOWN SEED TOP_K CPUS MEMORY SHARED_BUFFERS POSTGRES_SHM_SIZE
-export MAINTENANCE_WORK_MEM
+export MAINTENANCE_WORK_MEM MAX_PARALLEL_MAINTENANCE_WORKERS
 export PARADEDB_PORT POSTGRES_PORT PG_TEXTSEARCH_PORT ELASTICSEARCH_PORT
 export WORKERS BATCH_SIZE BUILD RECREATE OUTPUT OUT_DIR LOADER K6
 
@@ -72,6 +73,7 @@ help:
 	  'CPUS=8 POSTGRES_SHM_SIZE=16g (Docker limits per backend)' \
 	  'MEMORY defaults to 64g for create, 32g otherwise; MEMORY=<limit> overrides either.' \
 	  'SHARED_BUFFERS=24GB MAINTENANCE_WORK_MEM=24GB (all PostgreSQL backends, every target)' \
+	  'MAX_PARALLEL_MAINTENANCE_WORKERS=8 (all PostgreSQL backends, every target)' \
 	  'All PostgreSQL backends explicitly use max_parallel_workers_per_gather=2.' \
 	  'WORKERS=1 BATCH_SIZE=10000 control CSV bulk loading.' \
 	  'create resumes completed stages. RECREATE=1 explicitly reloads selected backends.' \
