@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/quickwit-oss/search-benchmark-game",
+  "commit": "a7c75473e91746280c5f01e69bf594ece5fca560",
+  "source_url": "https://www.dropbox.com/s/wwnfnu441w1ec9p/wiki-articles.json.bz2?dl=1",
+  "source_bytes": 2515058275,
+  "source_sha256": "ab4e69b72a139b2dd9df28ee59dc82e0a8b65d3de24c478e2fcc131423b1ad7f",
+  "documents": 5032104,
+  "transformation": "Upstream body.lower(), then re.sub('[^a-zA-Z]+', ' ', text); preserve URL IDs and document order; no trimming. Skip invalid JSON and empty URLs exactly as upstream. Title and unused random sort_field are not indexed.",
+  "empty_body_csv_encoding": "Quoted empty string, preserving empty bodies without PostgreSQL NULLs"
+}

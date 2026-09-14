@@ -2,6 +2,10 @@
 
 A dataset is a self-contained directory with everything needed to load data and run benchmarks against one or more backends.
 
+Wikipedia and Stack Exchange have dedicated `Makefile.wikipedia` and
+`Makefile.stackexchange` entry points with a shared benchmark workload. See
+[their setup and run instructions](../benchmarks/README.md).
+
 ## Directory Structure
 
 ```text

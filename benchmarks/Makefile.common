@@ -1,0 +1,215 @@
+SHELL := /bin/bash
+.SHELLFLAGS := -euo pipefail -c
+.ONESHELL:
+.DEFAULT_GOAL := help
+.NOTPARALLEL:
+.DELETE_ON_ERROR:
+
+REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/..)
+THIS_MAKEFILE := $(REPO_ROOT)/Makefile.$(DATASET)
+DATASET_DIR := $(REPO_ROOT)/datasets/$(DATASET)
+CONFIG_DIR := $(REPO_ROOT)/benchmarks
+PROJECT ?= bench-datasets-$(DATASET)
+STATE_DIR ?= $(CONFIG_DIR)/.state/$(PROJECT)
+DATA_GZ ?= $(DATASET_DIR)/data.csv.gz
+DATA_CSV ?= $(DATASET_DIR)/data.csv
+CHECKSUMS ?= $(DATASET_DIR)/SHA256SUMS
+QUERIES ?= $(DATASET_DIR)/queries.json
+
+WORKLOAD ?= topk
+QUERY_STYLE ?= disjunction
+ALL_BACKENDS := paradedb,pg_textsearch,postgres,elasticsearch
+ifeq ($(WORKLOAD):$(QUERY_STYLE),topk:disjunction)
+BACKENDS ?= $(ALL_BACKENDS)
+else
+BACKENDS ?= paradedb,postgres,elasticsearch
+endif
+VUS ?= 1
+DURATION ?= 60s
+PREWARM ?= 10s
+COOLDOWN ?= 0s
+SEED ?= 1592614637
+TOP_K ?= 10
+CPUS ?= 4
+MEMORY ?= 8g
+POSTGRES_SHM_SIZE ?= 16g
+WORKERS ?= 1
+BATCH_SIZE ?= 10000
+BUILD ?= 1
+RECREATE ?= 0
+OUTPUT ?= live
+OUT_DIR ?= $(REPO_ROOT)/out/$(DATASET)-$(WORKLOAD)-$(QUERY_STYLE)
+LOADER := $(REPO_ROOT)/bin/loader
+K6 := $(REPO_ROOT)/k6
+
+export DATASET DATASET_DIR REPO_ROOT THIS_MAKEFILE CONFIG_DIR PROJECT STATE_DIR
+export DATA_GZ DATA_CSV CHECKSUMS QUERIES WORKLOAD QUERY_STYLE BACKENDS
+export VUS DURATION PREWARM COOLDOWN SEED TOP_K CPUS MEMORY POSTGRES_SHM_SIZE
+export PARADEDB_PORT POSTGRES_PORT PG_TEXTSEARCH_PORT ELASTICSEARCH_PORT
+export WORKERS BATCH_SIZE BUILD RECREATE OUTPUT OUT_DIR LOADER K6
+
+COMPOSE = docker compose --project-name "$$PROJECT" --file "$$CONFIG_DIR/compose.yml"
+
+.PHONY: help create run data validate validate-run _create_backend stop
+
+help:
+	@printf '%s\n' \
+	  'make -f Makefile.$(DATASET) create [BACKENDS=paradedb,pg_textsearch,postgres,elasticsearch]' \
+	  'make -f Makefile.$(DATASET) run WORKLOAD=topk QUERY_STYLE=disjunction BACKENDS=paradedb,postgres' \
+	  '' \
+	  'WORKLOAD=topk|count   QUERY_STYLE=conjunction|disjunction|phrase|mixed' \
+	  'pg_textsearch supports only WORKLOAD=topk QUERY_STYLE=disjunction.' \
+	  'BACKENDS accepts comma-separated names; order controls benchmark order.' \
+	  'VUS=1 DURATION=60s PREWARM=10s COOLDOWN=0s TOP_K=10 SEED=1592614637' \
+	  'QUERIES=<json-path> OUTPUT=live (or json, html, or a comma-separated combination) OUT_DIR=<directory>' \
+	  'CPUS=4 MEMORY=8g POSTGRES_SHM_SIZE=16g (Docker limits; PostgreSQL tuning uses defaults)' \
+	  'WORKERS=1 BATCH_SIZE=10000 control CSV bulk loading.' \
+	  'create resumes completed stages. RECREATE=1 explicitly reloads selected backends.' \
+	  'BUILD=0 reuses installed images. PROJECT=<name> selects an isolated set of volumes.' \
+	  'data decompresses data.csv.gz; stop stops this project without deleting data.' \
+	  'See benchmarks/README.md for data locations, ports, and recovery.'
+
+validate:
+	@for dependency in docker gzip sha256sum flock; do
+	  command -v "$$dependency" >/dev/null || { echo "Missing dependency: $$dependency" >&2; exit 1; }
+	done
+	[[ "$$PROJECT" =~ ^[a-z0-9][a-z0-9_-]*$$ ]] || { echo 'Invalid PROJECT name' >&2; exit 1; }
+	[[ "$$BUILD" =~ ^[01]$$ && "$$RECREATE" =~ ^[01]$$ ]] || { echo 'BUILD and RECREATE must be 0 or 1' >&2; exit 1; }
+	backends=($${BACKENDS//,/ })
+	(($${#backends[@]} > 0)) || { echo 'BACKENDS must not be empty' >&2; exit 1; }
+	declare -A seen=()
+	for backend in "$${backends[@]}"; do
+	  case "$$backend" in paradedb|pg_textsearch|postgres|elasticsearch) ;; *) echo "Unknown backend: $$backend" >&2; exit 1;; esac
+	  [[ -z "$${seen[$$backend]:-}" ]] || { echo "Duplicate backend: $$backend" >&2; exit 1; }
+	  seen[$$backend]=1
+	done
+	$(COMPOSE) config --quiet
+
+validate-run: validate
+	@case "$$WORKLOAD" in topk|count) ;; *) echo 'WORKLOAD must be topk or count' >&2; exit 1;; esac
+	case "$$QUERY_STYLE" in conjunction|disjunction|phrase|mixed) ;; *) echo 'Invalid QUERY_STYLE' >&2; exit 1;; esac
+	for backend in $${BACKENDS//,/ }; do
+	  if [[ "$$backend" == pg_textsearch && "$$WORKLOAD:$$QUERY_STYLE" != topk:disjunction ]]; then
+	    echo 'pg_textsearch supports only WORKLOAD=topk QUERY_STYLE=disjunction' >&2; exit 1
+	  fi
+	done
+	[[ "$$VUS" =~ ^[1-9][0-9]*$$ && "$$TOP_K" =~ ^[1-9][0-9]*$$ ]] || { echo 'VUS and TOP_K must be positive integers' >&2; exit 1; }
+	[[ "$$SEED" =~ ^[0-9]+$$ ]] || { echo 'SEED must be an unsigned integer' >&2; exit 1; }
+	for duration in "$$DURATION" "$$PREWARM" "$$COOLDOWN"; do
+	  [[ "$$duration" =~ ^([0-9]+(\.[0-9]+)?(ns|us|ms|s|m|h))+$$ ]] || { echo "Invalid duration: $$duration" >&2; exit 1; }
+	done
+	test -s "$$QUERIES" || { echo "Missing query file: $$QUERIES" >&2; exit 1; }
+	[[ "$$OUTPUT" =~ ^((live|json|html),)*(live|json|html)$$ ]] || { echo 'OUTPUT must be live, json, html, or a comma-separated combination' >&2; exit 1; }
+
+data: $(DATA_CSV)
+
+$(DATA_CSV): $(DATA_GZ) $(CHECKSUMS)
+	@mkdir -p "$$(dirname "$$DATA_CSV")"
+	partial="$$DATA_CSV.partial.$$$$"
+	trap 'rm -f "$$partial"' EXIT
+	echo "Decompressing $$DATA_GZ to $$DATA_CSV"
+	gzip -dc -- "$$DATA_GZ" > "$$partial"
+	expected=$$(awk '$$2 == "data.csv" { print $$1 }' "$$CHECKSUMS")
+	test -n "$$expected" || { echo 'Missing data.csv checksum' >&2; exit 1; }
+	actual=$$(sha256sum "$$partial"); actual=$${actual%% *}
+	[[ "$$actual" == "$$expected" ]] || { echo 'CSV checksum mismatch' >&2; exit 1; }
+	mv -- "$$partial" "$$DATA_CSV"
+	echo 'CSV decompressed and checksum verified.'
+
+$(LOADER):
+	+$(MAKE) --no-print-directory -C "$(REPO_ROOT)" loader
+
+$(K6):
+	+$(MAKE) --no-print-directory -C "$(REPO_ROOT)" k6
+
+create: validate data $(LOADER)
+	@mkdir -p "$$STATE_DIR/logs"
+	exec 9>"$$STATE_DIR/lock"
+	flock -n 9 || { echo "Another create/run is using $$PROJECT" >&2; exit 1; }
+	backends=($${BACKENDS//,/ })
+	if [[ "$$BUILD" == 1 ]]; then
+	  for backend in "$${backends[@]}"; do
+	    case "$$backend" in paradedb|pg_textsearch) $(COMPOSE) build "$$backend";; esac
+	  done
+	fi
+	$(COMPOSE) stop
+	for backend in "$${backends[@]}"; do
+	  $(MAKE) --no-print-directory -f "$$THIS_MAKEFILE" _create_backend BACKEND="$$backend"
+	done
+	echo "Creation complete. Logs and stage records: $$STATE_DIR"
+
+_create_backend:
+	@backend='$(BACKEND)'
+	case "$$backend" in paradedb|pg_textsearch|postgres|elasticsearch) ;; *) exit 1;; esac
+	state="$$STATE_DIR/$$backend"
+	data_hash=$$(awk '$$2 == "data.csv" {print $$1}' "$$CHECKSUMS")
+	test -n "$$data_hash"
+	load_hash=$$({ printf '%s\n' "$$data_hash"; cat "$$DATASET_DIR/schema.yaml" "$$CONFIG_DIR/$$backend"/pre.*; } | sha256sum); load_hash=$${load_hash%% *}
+	done_hash=$$({ printf '%s\n' "$$load_hash"; cat "$$CONFIG_DIR/$$backend"/post.*; } | sha256sum); done_hash=$${done_hash%% *}
+	if ! docker volume inspect "$${PROJECT}_$${backend}_data" >/dev/null 2>&1 || [[ "$$RECREATE" == 1 ]]; then
+	  rm -f "$$state.loaded" "$$state.done"
+	fi
+	if [[ -f "$$state.done" ]]; then
+	  [[ "$$(cat "$$state.done")" == "$$done_hash" ]] || { echo "$$backend configuration changed; use RECREATE=1 to reload" >&2; exit 1; }
+	  echo "$$backend: already created; skipping"
+	  exit 0
+	fi
+	if [[ -f "$$state.loaded" && "$$(cat "$$state.loaded")" != "$$load_hash" ]]; then
+	  echo "$$backend input/schema changed; use RECREATE=1 to reload" >&2; exit 1
+	fi
+	log="$$STATE_DIR/logs/$$(date -u +%Y%m%dT%H%M%S)-$$backend.log"
+	{
+	  trap '$(COMPOSE) stop "$$backend"' EXIT
+	  trap 'exit 130' INT
+	  trap 'exit 143' TERM
+	  echo "$$backend: starting (log: $$log)"
+	  $(COMPOSE) up -d --wait --wait-timeout 300 --no-build "$$backend"
+	  load_dir="$$STATE_DIR/$$backend-load"
+	  mkdir -p "$$load_dir/$$backend"
+	  ln -sfn "$$DATASET_DIR/schema.yaml" "$$load_dir/schema.yaml"
+	  ln -sfn "$$DATA_CSV" "$$load_dir/data.csv"
+	  if [[ "$$backend" == elasticsearch ]]; then
+	    ln -sfn "$$CONFIG_DIR/elasticsearch/pre.json" "$$load_dir/elasticsearch/pre.json"
+	    ln -sfn "$$CONFIG_DIR/elasticsearch/post.json" "$$load_dir/elasticsearch/post.json"
+	    echo 'elasticsearch: creating index, loading CSV, and finalizing'
+	    ELASTICSEARCH_URL="http://127.0.0.1:$$ELASTICSEARCH_PORT" \
+	      "$$LOADER" load --backend elasticsearch --workers "$$WORKERS" --batch-size "$$BATCH_SIZE" "$$load_dir"
+	  else
+	    if [[ ! -f "$$state.loaded" ]]; then
+	      echo "$$backend: creating table and loading CSV"
+	      ln -sfn "$$CONFIG_DIR/$$backend/pre.sql" "$$load_dir/$$backend/pre.sql"
+	      export PARADEDB_URL="postgres://postgres:postgres@127.0.0.1:$$PARADEDB_PORT/benchmark"
+	      export PG_TEXTSEARCH_URL="postgres://postgres:postgres@127.0.0.1:$$PG_TEXTSEARCH_PORT/benchmark"
+	      export POSTGRES_URL="postgres://postgres:postgres@127.0.0.1:$$POSTGRES_PORT/benchmark"
+	      "$$LOADER" load --backend "$$backend" --workers "$$WORKERS" --batch-size "$$BATCH_SIZE" "$$load_dir"
+	      printf '%s\n' "$$load_hash" > "$$state.loaded"
+	    else
+	      echo "$$backend: CSV load already complete; resuming index creation"
+	    fi
+	    echo "$$backend: creating index and gathering statistics"
+	    $(COMPOSE) exec -T "$$backend" psql -X -U postgres -d benchmark -v ON_ERROR_STOP=1 < "$$CONFIG_DIR/$$backend/post.sql"
+	  fi
+	  printf '%s\n' "$$done_hash" > "$$state.done"
+	  echo "$$backend: complete"
+	} 2>&1 | tee "$$log"
+
+run: validate-run $(K6)
+	@mkdir -p "$$STATE_DIR" "$$OUT_DIR"
+	exec 9>"$$STATE_DIR/lock"
+	flock -n 9 || { echo "Another create/run is using $$PROJECT" >&2; exit 1; }
+	backends=($${BACKENDS//,/ })
+	for backend in "$${backends[@]}"; do
+	  test -f "$$STATE_DIR/$$backend.done" || { echo "$$backend has not been created; run the create target first" >&2; exit 1; }
+	  docker volume inspect "$${PROJECT}_$${backend}_data" >/dev/null || { echo "$$backend volume is missing; run create again" >&2; exit 1; }
+	done
+	trap '$(COMPOSE) stop "$${backends[@]}"' EXIT
+	trap 'exit 130' INT
+	trap 'exit 143' TERM
+	$(COMPOSE) up -d --wait --wait-timeout 300 --no-build "$${backends[@]}"
+	export BENCHMARK_QUERY_SET="$$DATASET" BENCHMARK_WORKLOAD="$$WORKLOAD" BENCHMARK_QUERY_STYLE="$$QUERY_STYLE"
+	export DASHBOARD_EXPORT_DIR="$$OUT_DIR" DASHBOARD_EXPORT_PREFIX="$$(date -u +%Y%m%dT%H%M%S)-$$WORKLOAD-$$QUERY_STYLE"
+	echo "Running $$DATASET: $$WORKLOAD / $$QUERY_STYLE; backends=$$BACKENDS; vus=$$VUS; duration=$$DURATION per backend"
+	"$$K6" run --out "dashboard=$$OUTPUT" "$$CONFIG_DIR/search.js" 2>&1 | tee "$$OUT_DIR/$$DASHBOARD_EXPORT_PREFIX.log"
+
+stop:
+	@$(COMPOSE) stop

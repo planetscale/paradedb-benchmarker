@@ -1,0 +1,7 @@
+DATASET := wikipedia
+PARADEDB_PORT ?= 35432
+POSTGRES_PORT ?= 35433
+PG_TEXTSEARCH_PORT ?= 35435
+ELASTICSEARCH_PORT ?= 39200
+
+include $(dir $(abspath $(lastword $(MAKEFILE_LIST))))benchmarks/Makefile.common

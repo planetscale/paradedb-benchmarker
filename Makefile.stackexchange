@@ -1,0 +1,7 @@
+DATASET := stackexchange
+PARADEDB_PORT ?= 45432
+POSTGRES_PORT ?= 45433
+PG_TEXTSEARCH_PORT ?= 45435
+ELASTICSEARCH_PORT ?= 49200
+
+include $(dir $(abspath $(lastword $(MAKEFILE_LIST))))benchmarks/Makefile.common
