@@ -25,10 +25,11 @@ existing loader parses CSV records, including embedded newlines, and uses
 PostgreSQL binary COPY or Elasticsearch bulk requests. PostgreSQL's generated
 `tsvector` is computed during import.
 
-Images are pinned by the Docker configuration. During both `create` and `run`,
-each container defaults to 8 CPUs and 32 GB of memory. Every PostgreSQL backend
-uses `shared_buffers=24GB`; other PostgreSQL tuning settings use defaults,
-with the required extension preloads configured. The index
+Images are pinned by the Docker configuration. Each container defaults to 8 CPUs,
+with 64 GB of memory during `create` and 32 GB during `run`. Every PostgreSQL
+backend uses `shared_buffers=24GB` and `maintenance_work_mem=24GB` for every
+target. Other PostgreSQL tuning settings use defaults, with the required
+extension preloads configured. The index
 definitions preserve the existing plain backend configurations: ParadeDB's
 default tokenizer with eight target segments, the PostgreSQL `simple` text
 configuration for PostgreSQL and pg_textsearch, and Elasticsearch's `standard`
@@ -54,6 +55,20 @@ make -f Makefile.wikipedia create BACKENDS=postgres RECREATE=1
 Setup stops this project's containers before loading and stops each backend
 afterward, including on failure. Other Compose projects are independent.
 
+To drop the benchmark data for selected backends, use `clean`:
+
+```bash
+make -f Makefile.wikipedia clean BACKENDS=pg_textsearch
+```
+
+`clean` drops the PostgreSQL `documents` table and its indexes, or the
+Elasticsearch `documents` index, and clears the selected backends' load/index
+completion markers. It starts containers with existing data volumes as needed
+and stops each selected container afterward. Docker volumes, source CSVs,
+archives, and logs are retained.
+Missing volumes are skipped; repeating `clean` is safe. The next `create` reloads
+the cleaned backends. Omit `BACKENDS` to clean all four default backends.
+
 ## Run a benchmark
 
 GNU Make accepts `NAME=value` arguments rather than `-D` parameters:
@@ -73,30 +88,31 @@ make -f Makefile.stackexchange run \
 `run` uses already-created volumes. It starts the selected containers, runs
 backends sequentially in the order supplied, and stops them after the run,
 including on interruption. It does not reload or restore data between runs.
-The Makefiles serialize `create` and `run` within each project.
+The Makefiles serialize `create`, `run`, and `clean` within each project.
 
-| Variable            | Default                                  | Meaning                                                                            |
-| ------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------- |
-| `WORKLOAD`          | `topk`                                   | `topk` or `count`                                                                  |
-| `QUERY_STYLE`       | `disjunction`                            | `conjunction`, `disjunction`, `phrase`, or `mixed`                                 |
-| `BACKENDS`          | All compatible backends                  | Comma-separated backend names in execution order                                   |
-| `VUS`               | `8`                                      | Concurrent query workers per backend                                               |
-| `DURATION`          | `60s`                                    | Full measured duration per backend                                                 |
-| `PREWARM`           | `10s`                                    | Unmeasured queries before each measured phase; `0s` disables warm-up               |
-| `COOLDOWN`          | `0s`                                     | Host filesystem sync and idle time after stopping a backend, before the next phase |
-| `TOP_K`             | `10`                                     | Number of hits requested for `topk`                                                |
-| `SEED`              | `1592614637`                             | Repeatable shuffle of query records/styles; unsigned 32-bit integer                |
-| `QUERIES`           | Dataset's `queries.json`                 | Path to another compatible query file                                              |
-| `OUTPUT`            | `live`                                   | `live`, `json`, `html`, or a comma-separated combination                           |
-| `OUT_DIR`           | `out/<dataset>-<workload>-<query-style>` | Logs and timestamped dashboard exports                                             |
-| `CPUS`              | `8`                                      | Docker CPU limit per backend                                                       |
-| `MEMORY`            | `32g`                                    | Docker memory limit per backend                                                    |
-| `SHARED_BUFFERS`    | `24GB`                                   | PostgreSQL shared buffers during both creation and benchmark runs                  |
-| `POSTGRES_SHM_SIZE` | `16g`                                    | Docker `/dev/shm` capacity for PostgreSQL backends                                 |
-| `WORKERS`           | `1`                                      | Parallel workers during CSV loading                                                |
-| `BATCH_SIZE`        | `10000`                                  | Rows per load batch                                                                |
-| `BUILD`             | `1`                                      | Set to `0` to reuse already-built images                                           |
-| `PROJECT`           | `bench-datasets-<dataset>`               | Docker project and container prefix                                                |
+| Variable               | Default                                  | Meaning                                                                            |
+| ---------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| `WORKLOAD`             | `topk`                                   | `topk` or `count`                                                                  |
+| `QUERY_STYLE`          | `disjunction`                            | `conjunction`, `disjunction`, `phrase`, or `mixed`                                 |
+| `BACKENDS`             | All compatible backends                  | Comma-separated backend names in execution order                                   |
+| `VUS`                  | `8`                                      | Concurrent query workers per backend                                               |
+| `DURATION`             | `60s`                                    | Full measured duration per backend                                                 |
+| `PREWARM`              | `10s`                                    | Unmeasured queries before each measured phase; `0s` disables warm-up               |
+| `COOLDOWN`             | `0s`                                     | Host filesystem sync and idle time after stopping a backend, before the next phase |
+| `TOP_K`                | `10`                                     | Number of hits requested for `topk`                                                |
+| `SEED`                 | `1592614637`                             | Repeatable shuffle of query records/styles; unsigned 32-bit integer                |
+| `QUERIES`              | Dataset's `queries.json`                 | Path to another compatible query file                                              |
+| `OUTPUT`               | `live`                                   | `live`, `json`, `html`, or a comma-separated combination                           |
+| `OUT_DIR`              | `out/<dataset>-<workload>-<query-style>` | Logs and timestamped dashboard exports                                             |
+| `CPUS`                 | `8`                                      | Docker CPU limit per backend                                                       |
+| `MEMORY`               | `64g` for `create`; `32g` otherwise      | Docker memory limit per backend; explicit overrides apply to either target         |
+| `SHARED_BUFFERS`       | `24GB`                                   | PostgreSQL shared buffers during both creation and benchmark runs                  |
+| `MAINTENANCE_WORK_MEM` | `24GB`                                   | PostgreSQL maintenance memory for every target                                     |
+| `POSTGRES_SHM_SIZE`    | `16g`                                    | Docker `/dev/shm` capacity for PostgreSQL backends                                 |
+| `WORKERS`              | `1`                                      | Parallel workers during CSV loading                                                |
+| `BATCH_SIZE`           | `10000`                                  | Rows per load batch                                                                |
+| `BUILD`                | `1`                                      | Set to `0` to reuse already-built images                                           |
+| `PROJECT`              | `bench-datasets-<dataset>`               | Docker project and container prefix                                                |
 
 pg_textsearch supports only `WORKLOAD=topk QUERY_STYLE=disjunction` in this
 runner. Other selections default to ParadeDB, PostgreSQL, and Elasticsearch.
@@ -154,7 +170,8 @@ For local fixtures or externally stored data, `DATA_GZ`, `DATA_CSV`, and
 `CHECKSUMS` can override the default file paths. `CHECKSUMS` must contain a
 `data.csv` SHA-256 entry matching that CSV. `STATE_DIR` can also be overridden.
 Use absolute paths for overrides. `MEMORY` and `CPUS` control Docker limits;
-`SHARED_BUFFERS` controls PostgreSQL's buffer allocation independently.
+`SHARED_BUFFERS` and `MAINTENANCE_WORK_MEM` control PostgreSQL's buffer and
+maintenance allocations independently.
 
 ```bash
 make -f Makefile.wikipedia help

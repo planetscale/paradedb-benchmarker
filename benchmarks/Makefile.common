@@ -31,8 +31,13 @@ COOLDOWN ?= 0s
 SEED ?= 1592614637
 TOP_K ?= 10
 CPUS ?= 8
-MEMORY ?= 32g
+# Explicit MEMORY overrides apply to every target; only create defaults to 64g.
+ifeq ($(origin MEMORY),undefined)
+MEMORY := 32g
+create _create_backend: MEMORY := 64g
+endif
 SHARED_BUFFERS ?= 24GB
+MAINTENANCE_WORK_MEM ?= 24GB
 POSTGRES_SHM_SIZE ?= 16g
 WORKERS ?= 1
 BATCH_SIZE ?= 10000
@@ -46,12 +51,13 @@ K6 := $(REPO_ROOT)/k6
 export DATASET DATASET_DIR REPO_ROOT THIS_MAKEFILE CONFIG_DIR PROJECT STATE_DIR
 export DATA_GZ DATA_CSV CHECKSUMS QUERIES WORKLOAD QUERY_STYLE BACKENDS
 export VUS DURATION PREWARM COOLDOWN SEED TOP_K CPUS MEMORY SHARED_BUFFERS POSTGRES_SHM_SIZE
+export MAINTENANCE_WORK_MEM
 export PARADEDB_PORT POSTGRES_PORT PG_TEXTSEARCH_PORT ELASTICSEARCH_PORT
 export WORKERS BATCH_SIZE BUILD RECREATE OUTPUT OUT_DIR LOADER K6
 
 COMPOSE = docker compose --project-name "$$PROJECT" --file "$$CONFIG_DIR/compose.yml"
 
-.PHONY: help create run data validate validate-run _create_backend stop
+.PHONY: help create run clean data validate validate-run _create_backend stop
 
 help:
 	@printf '%s\n' \
@@ -63,11 +69,13 @@ help:
 	  'BACKENDS accepts comma-separated names; order controls benchmark order.' \
 	  'VUS=8 DURATION=60s PREWARM=10s COOLDOWN=0s TOP_K=10 SEED=1592614637' \
 	  'QUERIES=<json-path> OUTPUT=live (or json, html, or a comma-separated combination) OUT_DIR=<directory>' \
-	  'CPUS=8 MEMORY=32g POSTGRES_SHM_SIZE=16g (Docker limits per backend)' \
-	  'SHARED_BUFFERS=24GB (all PostgreSQL backends, during create and run)' \
+	  'CPUS=8 POSTGRES_SHM_SIZE=16g (Docker limits per backend)' \
+	  'MEMORY defaults to 64g for create, 32g otherwise; MEMORY=<limit> overrides either.' \
+	  'SHARED_BUFFERS=24GB MAINTENANCE_WORK_MEM=24GB (all PostgreSQL backends, every target)' \
 	  'WORKERS=1 BATCH_SIZE=10000 control CSV bulk loading.' \
 	  'create resumes completed stages. RECREATE=1 explicitly reloads selected backends.' \
 	  'BUILD=0 reuses installed images. PROJECT=<name> selects an isolated set of volumes.' \
+	  'clean [BACKENDS=<names>] drops benchmark tables/indexes and clears their setup markers.' \
 	  'data decompresses data.csv.gz; stop stops this project without deleting data.' \
 	  'See benchmarks/README.md for data locations, ports, and recovery.'
 
@@ -212,6 +220,42 @@ run: validate-run $(K6)
 	export DASHBOARD_EXPORT_DIR="$$OUT_DIR" DASHBOARD_EXPORT_PREFIX="$$(date -u +%Y%m%dT%H%M%S)-$$WORKLOAD-$$QUERY_STYLE"
 	echo "Running $$DATASET: $$WORKLOAD / $$QUERY_STYLE; backends=$$BACKENDS; vus=$$VUS; duration=$$DURATION per backend"
 	"$$K6" run --out "dashboard=$$OUTPUT" "$$CONFIG_DIR/search.js" 2>&1 | tee "$$OUT_DIR/$$DASHBOARD_EXPORT_PREFIX.log"
+
+clean: validate
+	@mkdir -p "$$STATE_DIR/logs"
+	exec 9>"$$STATE_DIR/lock"
+	flock -n 9 || { echo "Another create/run/clean is using $$PROJECT" >&2; exit 1; }
+	for backend in $${BACKENDS//,/ }; do
+	  state="$$STATE_DIR/$$backend"
+	  volume=$$(docker volume ls --filter "name=^$${PROJECT}_$${backend}_data$$" --format '{{.Name}}')
+	  if [[ -z "$$volume" ]]; then
+	    rm -f "$$state.loaded" "$$state.done"
+	    echo "$$backend: no data volume; setup markers cleared"
+	    continue
+	  fi
+	  log="$$STATE_DIR/logs/$$(date -u +%Y%m%dT%H%M%S)-$$backend-clean.log"
+	  (
+	    trap '$(COMPOSE) stop "$$backend"' EXIT
+	    trap 'exit 130' INT
+	    trap 'exit 143' TERM
+	    echo "$$backend: cleaning (log: $$log)"
+	    $(COMPOSE) up -d --wait --wait-timeout 300 --no-build "$$backend"
+	    # Invalidate markers before deletion so an interruption cannot leave data marked ready.
+	    rm -f "$$state.loaded" "$$state.done"
+	    if [[ "$$backend" == elasticsearch ]]; then
+	      status=$$($(COMPOSE) exec -T elasticsearch curl -sS -o /dev/null -w '%{http_code}' \
+	        -X DELETE http://localhost:9200/documents)
+	      case "$$status" in
+	        200|404) ;;
+	        *) echo "Elasticsearch index deletion failed: HTTP $$status" >&2; exit 1;;
+	      esac
+	    else
+	      $(COMPOSE) exec -T "$$backend" psql -X -U postgres -d benchmark -v ON_ERROR_STOP=1 \
+	        -c 'DROP TABLE IF EXISTS public.documents CASCADE;'
+	    fi
+	    echo "$$backend: benchmark data and setup markers cleared"
+	  ) 2>&1 | tee "$$log"
+	done
 
 stop:
 	@$(COMPOSE) stop
