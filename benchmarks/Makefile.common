@@ -96,7 +96,10 @@ validate:
 	$(COMPOSE) config --quiet
 
 validate-run: validate
-	@case "$$WORKLOAD" in topk|count) ;; *) echo 'WORKLOAD must be topk or count' >&2; exit 1;; esac
+	@if [[ -t 1 ]]; then
+	  command -v script >/dev/null || { echo 'Missing dependency: script (util-linux, needed for terminal logging)' >&2; exit 1; }
+	fi
+	case "$$WORKLOAD" in topk|count) ;; *) echo 'WORKLOAD must be topk or count' >&2; exit 1;; esac
 	case "$$QUERY_STYLE" in conjunction|disjunction|phrase|mixed) ;; *) echo 'Invalid QUERY_STYLE' >&2; exit 1;; esac
 	for backend in $${BACKENDS//,/ }; do
 	  if [[ "$$backend" == pg_textsearch && "$$WORKLOAD:$$QUERY_STYLE" != topk:disjunction ]]; then
@@ -219,7 +222,13 @@ run: validate-run $(K6)
 	export BENCHMARK_QUERY_SET="$$DATASET" BENCHMARK_WORKLOAD="$$WORKLOAD" BENCHMARK_QUERY_STYLE="$$QUERY_STYLE"
 	export DASHBOARD_EXPORT_DIR="$$OUT_DIR" DASHBOARD_EXPORT_PREFIX="$$(date -u +%Y%m%dT%H%M%S)-$$WORKLOAD-$$QUERY_STYLE"
 	echo "Running $$DATASET: $$WORKLOAD / $$QUERY_STYLE; backends=$$BACKENDS; vus=$$VUS; duration=$$DURATION per backend"
-	"$$K6" run --out "dashboard=$$OUTPUT" "$$CONFIG_DIR/search.js" 2>&1 | tee "$$OUT_DIR/$$DASHBOARD_EXPORT_PREFIX.log"
+	if [[ -t 1 ]]; then
+	  # Keep a terminal attached to k6 so progress bars can update in place.
+	  printf -v command '%q ' "$$K6" run --out "dashboard=$$OUTPUT" "$$CONFIG_DIR/search.js"
+	  SHELL=/bin/bash script --quiet --return --flush --command "exec $$command" "$$OUT_DIR/$$DASHBOARD_EXPORT_PREFIX.log"
+	else
+	  "$$K6" run --out "dashboard=$$OUTPUT" "$$CONFIG_DIR/search.js" 2>&1 | tee "$$OUT_DIR/$$DASHBOARD_EXPORT_PREFIX.log"
+	fi
 
 clean: validate
 	@mkdir -p "$$STATE_DIR/logs"

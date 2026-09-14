@@ -28,9 +28,12 @@ PostgreSQL binary COPY or Elasticsearch bulk requests. PostgreSQL's generated
 Images are pinned by the Docker configuration. Each container defaults to 8 CPUs,
 with 64 GB of memory during `create` and 32 GB during `run`. Every PostgreSQL
 backend uses `shared_buffers=24GB` and `maintenance_work_mem=24GB` for every
-target. Other PostgreSQL tuning settings use defaults, with the required
-extension preloads configured. The index
-definitions preserve the existing plain backend configurations: ParadeDB's
+target. These are the tuning overrides supplied by the Makefiles, alongside
+the required extension preloads. ParadeDB's image also writes tuning settings
+during initialization, including `max_parallel_workers_per_gather` at half the
+CPU count (4 with the default 8 CPUs); PostgreSQL and pg_textsearch use the
+PostgreSQL default of 2 for that setting. The index definitions preserve the
+existing plain backend configurations: ParadeDB's
 default tokenizer with eight target segments, the PostgreSQL `simple` text
 configuration for PostgreSQL and pg_textsearch, and Elasticsearch's `standard`
 analyzer with eight shards. Elasticsearch uses zero replicas and disables its
@@ -129,6 +132,9 @@ an ordinary cancellation at the end of a measurement phase is excluded.
 The default `OUTPUT=live` starts only the live dashboard. For files, use
 `OUTPUT=json,html` or `OUTPUT=live,json,html`. Logs are written while running;
 requested JSON and HTML dashboard files are written when k6 shuts down.
+Interactive runs preserve k6's terminal progress bars while recording the
+session to the log file, including ANSI escape sequences. Redirected or piped
+runs produce plain progress output.
 
 ## Query files and data layout
 
@@ -163,8 +169,9 @@ named `<project>-<backend>` and use project-scoped named volumes. PostgreSQL
 and Elasticsearch data survive `stop` and subsequent `run` invocations.
 
 Required tools are GNU Make, Bash, Docker with Compose, gzip, sha256sum, flock,
-and Go when building the loader or k6 extension. Node.js is used only by the
-JavaScript unit tests. No npm dependencies are needed.
+util-linux's `script` for interactive runs, and Go when building the loader or
+k6 extension. Node.js is used only by the JavaScript unit tests. No npm
+dependencies are needed.
 
 For local fixtures or externally stored data, `DATA_GZ`, `DATA_CSV`, and
 `CHECKSUMS` can override the default file paths. `CHECKSUMS` must contain a
