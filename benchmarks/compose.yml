@@ -13,6 +13,8 @@ x-postgres: &postgres
       "shared_buffers=${SHARED_BUFFERS:-24GB}",
       "-c",
       "maintenance_work_mem=${MAINTENANCE_WORK_MEM:-24GB}",
+      "-c",
+      "max_parallel_workers_per_gather=2",
     ]
   stop_grace_period: 10m
   healthcheck:
@@ -36,6 +38,8 @@ services:
         "-c",
         "maintenance_work_mem=${MAINTENANCE_WORK_MEM:-24GB}",
         "-c",
+        "max_parallel_workers_per_gather=2",
+        "-c",
         "shared_preload_libraries=pg_search,pg_cron",
       ]
     ports: ["127.0.0.1:${PARADEDB_PORT}:5432"]
@@ -55,6 +59,8 @@ services:
         "shared_buffers=${SHARED_BUFFERS:-24GB}",
         "-c",
         "maintenance_work_mem=${MAINTENANCE_WORK_MEM:-24GB}",
+        "-c",
+        "max_parallel_workers_per_gather=2",
         "-c",
         "shared_preload_libraries=pg_textsearch",
       ]

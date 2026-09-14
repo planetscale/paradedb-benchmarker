@@ -72,6 +72,7 @@ help:
 	  'CPUS=8 POSTGRES_SHM_SIZE=16g (Docker limits per backend)' \
 	  'MEMORY defaults to 64g for create, 32g otherwise; MEMORY=<limit> overrides either.' \
 	  'SHARED_BUFFERS=24GB MAINTENANCE_WORK_MEM=24GB (all PostgreSQL backends, every target)' \
+	  'All PostgreSQL backends explicitly use max_parallel_workers_per_gather=2.' \
 	  'WORKERS=1 BATCH_SIZE=10000 control CSV bulk loading.' \
 	  'create resumes completed stages. RECREATE=1 explicitly reloads selected backends.' \
 	  'BUILD=0 reuses installed images. PROJECT=<name> selects an isolated set of volumes.' \

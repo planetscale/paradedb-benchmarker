@@ -27,13 +27,12 @@ PostgreSQL binary COPY or Elasticsearch bulk requests. PostgreSQL's generated
 
 Images are pinned by the Docker configuration. Each container defaults to 8 CPUs,
 with 64 GB of memory during `create` and 32 GB during `run`. Every PostgreSQL
-backend uses `shared_buffers=24GB` and `maintenance_work_mem=24GB` for every
-target. These are the tuning overrides supplied by the Makefiles, alongside
-the required extension preloads. ParadeDB's image also writes tuning settings
-during initialization, including `max_parallel_workers_per_gather` at half the
-CPU count (4 with the default 8 CPUs); PostgreSQL and pg_textsearch use the
-PostgreSQL default of 2 for that setting. The index definitions preserve the
-existing plain backend configurations: ParadeDB's
+backend uses `shared_buffers=24GB`, `maintenance_work_mem=24GB`, and
+`max_parallel_workers_per_gather=2` for every target. These settings are passed
+on the PostgreSQL command line, alongside the required extension preloads,
+so the worker limit overrides ParadeDB's CPU-based bootstrap value. Other
+tuning supplied by backend images still applies. The index definitions
+preserve the existing plain backend configurations: ParadeDB's
 default tokenizer with eight target segments, the PostgreSQL `simple` text
 configuration for PostgreSQL and pg_textsearch, and Elasticsearch's `standard`
 analyzer with eight shards. Elasticsearch uses zero replicas and disables its
