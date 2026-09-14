@@ -47,11 +47,11 @@ Then open http://localhost:5665/static/ in your browser.
 
 `--out dashboard` accepts a comma-separated list of outputs. Each keyword toggles one output independently — order doesn't matter, unknown keywords error out.
 
-| Keyword | Effect                                                         |
-| ------- | -------------------------------------------------------------- |
-| `live`  | Serve the real-time dashboard at http://localhost:5665/        |
-| `json`  | Write a raw `dashboard_<timestamp>.json` snapshot on exit      |
-| `html`  | Write a standalone `dashboard_<timestamp>.html` viewer on exit |
+| Keyword | Effect                                                                    |
+| ------- | ------------------------------------------------------------------------- |
+| `live`  | Serve the real-time dashboard at http://localhost:5665/                   |
+| `json`  | Write a raw `<directory>/<prefix>_<timestamp>.json` snapshot on exit      |
+| `html`  | Write a standalone `<directory>/<prefix>_<timestamp>.html` viewer on exit |
 
 ```bash
 # Default — live dashboard only
@@ -64,9 +64,20 @@ Then open http://localhost:5665/static/ in your browser.
 ./k6 run --out dashboard=live,html,json script.js
 ```
 
+The export prefix defaults to `dashboard`. Set `DASHBOARD_EXPORT_PREFIX` to a
+filename-safe value to change it; letters, numbers, periods, underscores, and
+hyphens are accepted. `DASHBOARD_EXPORT_DIR` selects the destination directory
+and defaults to the current directory when invoking k6 directly. Missing export
+directories are created during output initialization.
+
 ## Export & Replay
 
 The saved JSON keeps raw latency samples so you can re-aggregate with different timeline settings; the HTML is a single-file viewer with the same data embedded.
+
+When paced updates are enabled, each run also contains raw `updateMetrics`
+series for `duration` (milliseconds), `documents`, and `errors`. Every sample is
+stored as a `{time, value}` object. These series are retained for JSON analysis
+and are not rendered by the live or standalone dashboard.
 
 ```bash
 # View saved JSON later

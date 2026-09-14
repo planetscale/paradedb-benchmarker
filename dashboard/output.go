@@ -10,6 +10,7 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -50,12 +51,22 @@ type Output struct {
 	liveEnabled bool
 	exportJSON  bool
 	exportHTML  bool
+
+	// Directory and basename prefix shared by JSON and HTML exports.
+	exportDir    string
+	exportPrefix string
+
+	// Optional benchmark identity used only for user-facing query labels.
+	benchmarkQuerySet   string
+	benchmarkWorkload   string
+	benchmarkQueryStyle string
 }
 
 // DashboardData holds all metrics for the dashboard.
 type DashboardData struct {
 	StartTime     time.Time                    `json:"startTime"`
 	TotalDuration float64                      `json:"totalDuration"` // Total test duration in seconds
+	SelectedQuery string                       `json:"selectedQuery,omitempty"`
 	Runs          map[string]*RunMetrics       `json:"runs"`
 	Containers    map[string]*ContainerMetrics `json:"-"` // Container metrics by container name (independent of runs)
 }
@@ -78,7 +89,6 @@ type RunMetrics struct {
 	Alias           string                   `json:"alias"`     // User-defined alias for this backend instance
 	Color           string                   `json:"color"`     // Custom color for this backend
 	Chart           string                   `json:"chart"`     // Chart group for separating graphs
-	Latencies       []float64                `json:"latencies"`
 	Timeline        []TimelinePoint          `json:"timeline"`
 	IngestRate      []TimeValue              `json:"ingestRate"`    // Docs/sec timeline
 	TotalIngested   int64                    `json:"totalIngested"` // Total docs ingested
@@ -89,6 +99,9 @@ type RunMetrics struct {
 	StartTime       int64                    `json:"startTime"`
 	EndTime         int64                    `json:"endTime"`
 	LastUpdateTime  int64                    `json:"-"` // Track last update for end detection
+	PrewarmProgress float64                  `json:"prewarmProgress"`
+	Prewarming      bool                     `json:"prewarming"`
+	UpdateMetrics   *UpdateMetrics           `json:"-"`
 }
 
 // QueryMetrics holds metrics for a specific query type within a run.
@@ -102,9 +115,31 @@ type QueryMetrics struct {
 	StartTime int64           `json:"-"`
 	EndTime   int64           `json:"-"`
 
-	// Timestamps track when each latency sample arrived (parallel to Latencies slice)
-	Timestamps    []int64 `json:"-"`
-	LastPointTime int64   `json:"-"` // Tracks the last consumed index for no-window mode
+	// Timestamps track query completion times (parallel to Latencies).
+	Timestamps          []int64 `json:"-"`
+	TimelineSampleCount int     `json:"-"`
+	timelineWindowStart int
+	liveStats           liveLatencyStats
+	timelineHistogram   latencyHistogram
+}
+
+func newQueryMetrics(name string) *QueryMetrics {
+	return &QueryMetrics{Name: name}
+}
+
+// recordLatency keeps raw export data and bounded live aggregation in sync.
+// The caller owns the output lock for the complete operation.
+func (qm *QueryMetrics) recordLatency(value float64, sampleTime int64) {
+	if qm.StartTime == 0 {
+		qm.StartTime = sampleTime
+	}
+	if count := len(qm.Timestamps); count > 0 && sampleTime < qm.Timestamps[count-1] {
+		sampleTime = qm.Timestamps[count-1]
+	}
+	qm.EndTime = sampleTime
+	qm.Latencies = append(qm.Latencies, value)
+	qm.Timestamps = append(qm.Timestamps, sampleTime)
+	qm.liveStats.record(value)
 }
 
 // TimelinePoint is a point in time with aggregated metrics.
@@ -122,6 +157,13 @@ type TimelinePoint struct {
 type TimeValue struct {
 	Time  int64   `json:"time"`
 	Value float64 `json:"value"`
+}
+
+// UpdateMetrics holds raw k6 update samples for JSON exports.
+type UpdateMetrics struct {
+	Duration  []TimeValue `json:"duration"`
+	Documents []TimeValue `json:"documents"`
+	Errors    []TimeValue `json:"errors"`
 }
 
 // Constants for timing thresholds
@@ -145,6 +187,31 @@ func getRunName(backend string, tags map[string]string) string {
 		run = run + " (" + chart + ")"
 	}
 	return run
+}
+
+func benchmarkQueryDisplayName(rm *RunMetrics, querySet, workload, queryStyle, fallback string) string {
+	querySet = strings.TrimSpace(querySet)
+	workload = strings.TrimSpace(workload)
+	queryStyle = strings.TrimSpace(queryStyle)
+	if queryStyle != "" {
+		workload += "/" + queryStyle
+	}
+	if querySet == "" || workload == "" {
+		return fallback
+	}
+
+	backend := rm.Alias
+	if backend == "" {
+		backend = rm.Backend
+	}
+	if backend == "" {
+		return fallback
+	}
+
+	if termCount, ok := strings.CutSuffix(querySet, "-terms"); ok {
+		querySet = termCount + "-term"
+	}
+	return fmt.Sprintf("%s (%s, %s)", backend, querySet, workload)
 }
 
 // getOrCreateRun gets or creates a RunMetrics entry for the given run name.
@@ -191,6 +258,43 @@ func parseOutputModes(arg string) (live, exportJSON, exportHTML bool, err error)
 	return live, exportJSON, exportHTML, nil
 }
 
+func dashboardExportPrefix() (string, error) {
+	prefix := os.Getenv("DASHBOARD_EXPORT_PREFIX")
+	if prefix == "" {
+		return "dashboard", nil
+	}
+	for _, char := range prefix {
+		if char >= 'a' && char <= 'z' || char >= 'A' && char <= 'Z' ||
+			char >= '0' && char <= '9' || strings.ContainsRune("._-", char) {
+			continue
+		}
+		return "", fmt.Errorf("DASHBOARD_EXPORT_PREFIX may contain only letters, numbers, periods, underscores, and hyphens")
+	}
+	return prefix, nil
+}
+
+func dashboardExportDir() string {
+	dir := os.Getenv("DASHBOARD_EXPORT_DIR")
+	if dir == "" {
+		return "."
+	}
+	return filepath.Clean(dir)
+}
+
+func selectedQueryFromExternal(external map[string]json.RawMessage) string {
+	raw := external["benchmarker"]
+	if len(raw) == 0 {
+		return ""
+	}
+	var config struct {
+		SelectedQuery string `json:"selectedQuery"`
+	}
+	if err := json.Unmarshal(raw, &config); err != nil {
+		return ""
+	}
+	return strings.TrimSpace(config.SelectedQuery)
+}
+
 // New creates a new dashboard output.
 func New(params output.Params) (output.Output, error) {
 	broadcast := defaultBroadcastInterval
@@ -209,21 +313,37 @@ func New(params output.Params) (output.Output, error) {
 	if err != nil {
 		return nil, err
 	}
+	exportPrefix, err := dashboardExportPrefix()
+	if err != nil {
+		return nil, err
+	}
+	exportDir := dashboardExportDir()
+	if exportJSON || exportHTML {
+		if err := os.MkdirAll(exportDir, 0o755); err != nil {
+			return nil, fmt.Errorf("create dashboard export directory %s: %w", exportDir, err)
+		}
+	}
 
 	return &Output{
-		params:            params,
-		stopCh:            make(chan struct{}),
-		doneCh:            make(chan struct{}),
-		clients:           make(map[chan []byte]struct{}),
-		broadcastInterval: broadcast,
-		timelineWindow:    window,
-		liveEnabled:       live,
-		exportJSON:        exportJSON,
-		exportHTML:        exportHTML,
+		params:              params,
+		stopCh:              make(chan struct{}),
+		doneCh:              make(chan struct{}),
+		clients:             make(map[chan []byte]struct{}),
+		broadcastInterval:   broadcast,
+		timelineWindow:      window,
+		liveEnabled:         live,
+		exportJSON:          exportJSON,
+		exportHTML:          exportHTML,
+		exportDir:           exportDir,
+		exportPrefix:        exportPrefix,
+		benchmarkQuerySet:   os.Getenv("BENCHMARK_QUERY_SET"),
+		benchmarkWorkload:   os.Getenv("BENCHMARK_WORKLOAD"),
+		benchmarkQueryStyle: os.Getenv("BENCHMARK_QUERY_STYLE"),
 		data: &DashboardData{
-			StartTime:  time.Now(),
-			Runs:       make(map[string]*RunMetrics),
-			Containers: make(map[string]*ContainerMetrics),
+			StartTime:     time.Now(),
+			SelectedQuery: selectedQueryFromExternal(params.ScriptOptions.External),
+			Runs:          make(map[string]*RunMetrics),
+			Containers:    make(map[string]*ContainerMetrics),
 		},
 	}, nil
 }
@@ -302,7 +422,7 @@ func (o *Output) Stop() error {
 		data := o.getExportData()
 		o.mu.RUnlock()
 
-		base := fmt.Sprintf("dashboard_%s", time.Now().Format("2006-01-02_15-04-05"))
+		base := filepath.Join(o.exportDir, fmt.Sprintf("%s_%s", o.exportPrefix, time.Now().Format("2006-01-02_15-04-05")))
 
 		if o.exportJSON {
 			jsonData, err := marshalExportJSON(data)
@@ -346,7 +466,9 @@ func (o *Output) loop() {
 			return
 		case <-ticker.C:
 			o.flush()
-			o.broadcast()
+			if o.liveEnabled {
+				o.broadcast()
+			}
 		}
 	}
 }
@@ -367,6 +489,13 @@ func (o *Output) flush() {
 			name := sample.Metric.Name
 			value := sample.Value
 			tags := sample.Tags.Map()
+			if configured := tags["chart_duration"]; configured != "" {
+				if duration, err := time.ParseDuration(configured); err == nil && duration > 0 {
+					if seconds := duration.Seconds(); seconds > o.data.TotalDuration {
+						o.data.TotalDuration = seconds
+					}
+				}
+			}
 
 			switch {
 			case name == "backend_init":
@@ -407,8 +536,23 @@ func (o *Output) flush() {
 				if rm.StartTime == 0 {
 					rm.StartTime = sample.Time.UnixMilli()
 				}
+				rm.Prewarming = false
+
+			case name == "prewarm_progress":
+				backend := tags["backend"]
+				if backend == "" {
+					continue
+				}
+				runName := getRunName(backend, tags)
+				rm := o.getOrCreateRun(runName, backend, tags)
+				progress := math.Max(0, math.Min(100, value))
+				rm.PrewarmProgress = math.Max(rm.PrewarmProgress, progress)
+				if rm.StartTime == 0 {
+					rm.Prewarming = true
+				}
 
 			case name == "query_duration":
+				sampleTime := sample.Time.UnixMilli()
 				backend := tags["backend"]
 				if backend == "" {
 					backend = tags["run"]
@@ -422,11 +566,12 @@ func (o *Output) flush() {
 
 				runName := getRunName(backend, tags)
 				rm := o.getOrCreateRun(runName, backend, tags)
-				rm.Latencies = append(rm.Latencies, value)
 				if rm.StartTime == 0 {
-					rm.StartTime = sample.Time.UnixMilli()
+					rm.StartTime = sampleTime
 				}
-				rm.LastUpdateTime = now
+				if sampleTime > rm.LastUpdateTime {
+					rm.LastUpdateTime = sampleTime
+				}
 
 				// Track per-query metrics
 				queryName := tags["query"]
@@ -435,15 +580,10 @@ func (o *Output) flush() {
 				}
 				if queryName != "" {
 					if rm.Queries[queryName] == nil {
-						rm.Queries[queryName] = &QueryMetrics{Name: queryName}
+						rm.Queries[queryName] = newQueryMetrics(queryName)
 					}
 					qm := rm.Queries[queryName]
-					if qm.StartTime == 0 {
-						qm.StartTime = sample.Time.UnixMilli()
-					}
-					qm.EndTime = sample.Time.UnixMilli()
-					qm.Latencies = append(qm.Latencies, value)
-					qm.Timestamps = append(qm.Timestamps, now)
+					qm.recordLatency(value, sampleTime)
 					if qm.VUs == 0 || qm.Executor == "" {
 						if info := metrics.GetScenarioInfo(queryName); info != nil {
 							if qm.VUs == 0 {
@@ -484,6 +624,29 @@ func (o *Output) flush() {
 					}
 				}
 
+			case name == "update_duration" || name == "update_docs" || name == "update_errors":
+				backend := tags["backend"]
+				if backend == "" {
+					continue
+				}
+				rm := o.getOrCreateRun(getRunName(backend, tags), backend, tags)
+				if rm.UpdateMetrics == nil {
+					rm.UpdateMetrics = &UpdateMetrics{
+						Duration:  []TimeValue{},
+						Documents: []TimeValue{},
+						Errors:    []TimeValue{},
+					}
+				}
+				point := TimeValue{Time: sample.Time.UnixMilli(), Value: value}
+				switch name {
+				case "update_duration":
+					rm.UpdateMetrics.Duration = append(rm.UpdateMetrics.Duration, point)
+				case "update_docs":
+					rm.UpdateMetrics.Documents = append(rm.UpdateMetrics.Documents, point)
+				case "update_errors":
+					rm.UpdateMetrics.Errors = append(rm.UpdateMetrics.Errors, point)
+				}
+
 			case name == "container_cpu_percent":
 				container := tags["container"]
 				if container == "" {
@@ -507,6 +670,7 @@ func (o *Output) flush() {
 				o.data.Containers[container].Memory = append(o.data.Containers[container].Memory, TimeValue{Time: sample.Time.UnixMilli(), Value: value})
 
 			case name == "ingest_docs":
+				sampleTime := sample.Time.UnixMilli()
 				backend := tags["backend"]
 				if backend == "" {
 					backend = tags["run"]
@@ -522,12 +686,14 @@ func (o *Output) flush() {
 				rm := o.getOrCreateRun(runName, backend, tags)
 				rm.TotalIngested += int64(value)
 				if rm.FirstIngestTime == 0 {
-					rm.FirstIngestTime = sample.Time.UnixMilli()
+					rm.FirstIngestTime = sampleTime
 				}
 				if rm.StartTime == 0 {
-					rm.StartTime = sample.Time.UnixMilli()
+					rm.StartTime = sampleTime
 				}
-				rm.LastUpdateTime = now
+				if sampleTime > rm.LastUpdateTime {
+					rm.LastUpdateTime = sampleTime
+				}
 			}
 		}
 	}
@@ -537,7 +703,7 @@ func (o *Output) flush() {
 		o.updateIngestRate(rm, now)
 		// Update per-query timelines
 		for _, qm := range rm.Queries {
-			o.updateQueryTimeline(qm, now)
+			o.updateQueryTimeline(qm)
 		}
 		// Mark run ended after inactivity timeout.
 		if rm.EndTime == 0 && rm.LastUpdateTime > 0 && (now-rm.LastUpdateTime) > runEndTimeoutMs {
@@ -552,27 +718,28 @@ func (o *Output) flush() {
 // statistically meaningful sample sizes.
 // When timelineWindow == 0, uses non-overlapping buckets: each point covers only
 // new samples since the last point (original behavior).
-func (o *Output) updateQueryTimeline(qm *QueryMetrics, now int64) {
-	if len(qm.Latencies) == 0 {
+func (o *Output) updateQueryTimeline(qm *QueryMetrics) {
+	sampleCount := min(len(qm.Latencies), len(qm.Timestamps))
+	if sampleCount <= qm.TimelineSampleCount {
 		return
 	}
+	pointTime := qm.Timestamps[sampleCount-1]
 
 	if o.timelineWindow > 0 {
-		// Sliding window mode: gather all samples within the window
-		windowStart := now - o.timelineWindow.Milliseconds()
-		var windowLatencies []float64
-		var windowHits []int64
-		for i, ts := range qm.Timestamps {
-			if ts >= windowStart {
-				windowLatencies = append(windowLatencies, qm.Latencies[i])
-				if i < len(qm.HitCounts) {
-					windowHits = append(windowHits, qm.HitCounts[i])
-				}
-			}
+		// Sliding window mode: add new samples and evict expired samples from
+		// a fixed-size histogram. The raw arrays provide the expiry queue.
+		for i := qm.TimelineSampleCount; i < sampleCount; i++ {
+			qm.timelineHistogram.record(qm.Latencies[i])
 		}
-		if len(windowLatencies) == 0 {
-			return
+		windowStart := pointTime - o.timelineWindow.Milliseconds()
+		for qm.timelineWindowStart < sampleCount && qm.Timestamps[qm.timelineWindowStart] <= windowStart {
+			qm.timelineHistogram.remove(qm.Latencies[qm.timelineWindowStart])
+			qm.timelineWindowStart++
 		}
+		percentiles := qm.timelineHistogram.percentiles()
+		hitEnd := min(sampleCount, len(qm.HitCounts))
+		hitStart := min(qm.timelineWindowStart, hitEnd)
+		windowHits := qm.HitCounts[hitStart:hitEnd]
 
 		var avgHits float64
 		if len(windowHits) > 0 {
@@ -584,37 +751,26 @@ func (o *Output) updateQueryTimeline(qm *QueryMetrics, now int64) {
 		}
 
 		qm.Timeline = append(qm.Timeline, TimelinePoint{
-			Time:  now,
-			P50:   percentile(windowLatencies, 50),
-			P90:   percentile(windowLatencies, 90),
-			P95:   percentile(windowLatencies, 95),
-			P99:   percentile(windowLatencies, 99),
-			Count: len(windowLatencies),
+			Time:  pointTime,
+			P50:   percentiles.p50,
+			P90:   percentiles.p90,
+			P95:   percentiles.p95,
+			P99:   percentiles.p99,
+			Count: int(qm.timelineHistogram.count),
 			Hits:  avgHits,
 		})
 	} else {
 		// Non-overlapping bucket mode: only new samples since last point
-		lastIdx := 0
-		if len(qm.Timeline) > 0 {
-			lastCount := 0
-			for _, tp := range qm.Timeline {
-				lastCount += tp.Count
-			}
-			lastIdx = lastCount
+		lastIdx := qm.TimelineSampleCount
+		qm.timelineHistogram.reset()
+		for i := lastIdx; i < sampleCount; i++ {
+			qm.timelineHistogram.record(qm.Latencies[i])
 		}
-
-		if lastIdx >= len(qm.Latencies) {
-			return
-		}
-
-		recent := qm.Latencies[lastIdx:]
-		if len(recent) == 0 {
-			return
-		}
+		percentiles := qm.timelineHistogram.percentiles()
 
 		var avgHits float64
-		if len(qm.HitCounts) > lastIdx {
-			recentHits := qm.HitCounts[lastIdx:]
+		if hitEnd := min(sampleCount, len(qm.HitCounts)); hitEnd > lastIdx {
+			recentHits := qm.HitCounts[lastIdx:hitEnd]
 			if len(recentHits) > 0 {
 				var sum int64
 				for _, h := range recentHits {
@@ -625,15 +781,16 @@ func (o *Output) updateQueryTimeline(qm *QueryMetrics, now int64) {
 		}
 
 		qm.Timeline = append(qm.Timeline, TimelinePoint{
-			Time:  now,
-			P50:   percentile(recent, 50),
-			P90:   percentile(recent, 90),
-			P95:   percentile(recent, 95),
-			P99:   percentile(recent, 99),
-			Count: len(recent),
+			Time:  pointTime,
+			P50:   percentiles.p50,
+			P90:   percentiles.p90,
+			P95:   percentiles.p95,
+			P99:   percentiles.p99,
+			Count: int(qm.timelineHistogram.count),
 			Hits:  avgHits,
 		})
 	}
+	qm.TimelineSampleCount = sampleCount
 }
 
 // updateIngestRate calculates docs/sec for the last interval.
@@ -669,7 +826,7 @@ func queryDurationSeconds(qm *QueryMetrics) float64 {
 	}
 
 	duration := float64(qm.EndTime-qm.StartTime) / 1000
-	minDuration := maxVal(qm.Latencies) / 1000
+	minDuration := qm.liveStats.max / 1000
 	if duration < minDuration {
 		duration = minDuration
 	}
@@ -678,6 +835,10 @@ func queryDurationSeconds(qm *QueryMetrics) float64 {
 
 func (o *Output) broadcast() {
 	o.mu.RLock()
+	if len(o.clients) == 0 {
+		o.mu.RUnlock()
+		return
+	}
 	data, _ := json.Marshal(o.getSummary())
 	o.mu.RUnlock()
 
@@ -750,6 +911,9 @@ func (o *Output) getSummary() map[string]interface{} {
 
 		// Build per-query stats
 		queries := make(map[string]interface{})
+		indexIO, hasIndexIO := metrics.GetIndexIOStats(rm.Backend)
+		updateStats, hasUpdates := metrics.GetUpdateWorkloadStats(rm.Backend)
+		walStats, hasWAL := metrics.GetWALStats(rm.Backend)
 		for qName, qm := range rm.Queries {
 			// Get query pattern for this run/backend+chart+scenario.
 			queryPattern := getQueryPattern(rm.Backend, rm.Chart, qName)
@@ -760,34 +924,54 @@ func (o *Output) getSummary() map[string]interface{} {
 				queryQPS = float64(len(qm.Latencies)) / queryDuration
 			}
 
-			queries[qName] = map[string]interface{}{
+			percentiles := qm.liveStats.histogram.percentiles()
+			query := map[string]interface{}{
 				"name":     qm.Name,
 				"vus":      qm.VUs,
 				"executor": qm.Executor,
 				"count":    len(qm.Latencies),
 				"qps":      queryQPS,
-				"min":      minVal(qm.Latencies),
-				"max":      maxVal(qm.Latencies),
-				"p50":      percentile(qm.Latencies, 50),
-				"p95":      percentile(qm.Latencies, 95),
-				"p99":      percentile(qm.Latencies, 99),
+				"min":      qm.liveStats.min,
+				"max":      qm.liveStats.max,
+				"p50":      percentiles.p50,
+				"p95":      percentiles.p95,
+				"p99":      percentiles.p99,
 				"timeline": qm.Timeline,
 				"query":    queryPattern,
 			}
+			if displayName := benchmarkQueryDisplayName(rm, o.benchmarkQuerySet, o.benchmarkWorkload, o.benchmarkQueryStyle, qName); displayName != qName {
+				query["displayName"] = displayName
+			}
+			if hasIndexIO {
+				query["indexReadBytes"] = indexIO.ReadBytes
+				query["indexHitBytes"] = indexIO.HitBytes
+				query["indexRead"] = indexIO.Read
+				query["indexHit"] = indexIO.Hit
+			}
+			if hasUpdates {
+				query["updates"] = updateStats.CompletedUpdates
+			}
+			if hasUpdates && hasWAL {
+				query["walBytes"] = walStats.Bytes
+				query["walBytesPerUpdate"] = walBytesPerUpdate(walStats.Bytes, walStats.CompletedUpdates)
+			}
+			queries[qName] = query
 		}
 
 		runs[name] = map[string]interface{}{
-			"name":          rm.Name,
-			"backend":       rm.Backend,
-			"container":     rm.Container,
-			"alias":         rm.Alias,
-			"color":         rm.Color,
-			"chart":         rm.Chart,
-			"ingestRate":    rm.IngestRate,
-			"totalIngested": rm.TotalIngested,
-			"avgIngestRate": ingestRate,
-			"queries":       queries,
-			"startTime":     rm.StartTime,
+			"name":            rm.Name,
+			"backend":         rm.Backend,
+			"container":       rm.Container,
+			"alias":           rm.Alias,
+			"color":           rm.Color,
+			"chart":           rm.Chart,
+			"ingestRate":      rm.IngestRate,
+			"totalIngested":   rm.TotalIngested,
+			"avgIngestRate":   ingestRate,
+			"queries":         queries,
+			"startTime":       rm.StartTime,
+			"prewarmProgress": rm.PrewarmProgress,
+			"prewarming":      rm.Prewarming,
 		}
 	}
 
@@ -817,6 +1001,9 @@ func (o *Output) getSummary() map[string]interface{} {
 	if meta := readMetaEnv(); meta != nil {
 		out["meta"] = meta
 	}
+	if o.data.SelectedQuery != "" {
+		out["selectedQuery"] = o.data.SelectedQuery
+	}
 	addRunCaptures(out)
 	return out
 }
@@ -840,10 +1027,13 @@ func (o *Output) getExportData() map[string]interface{} {
 	runs := make(map[string]interface{})
 	for name, rm := range o.data.Runs {
 		queries := make(map[string]interface{})
+		indexIO, hasIndexIO := metrics.GetIndexIOStats(rm.Backend)
+		updateStats, hasUpdates := metrics.GetUpdateWorkloadStats(rm.Backend)
+		walStats, hasWAL := metrics.GetWALStats(rm.Backend)
 		for qName, qm := range rm.Queries {
 			queryPattern := getQueryPattern(rm.Backend, rm.Chart, qName)
 
-			queries[qName] = map[string]interface{}{
+			query := map[string]interface{}{
 				"name":       qm.Name,
 				"vus":        qm.VUs,
 				"executor":   qm.Executor,
@@ -852,6 +1042,23 @@ func (o *Output) getExportData() map[string]interface{} {
 				"hitCounts":  qm.HitCounts,
 				"query":      queryPattern,
 			}
+			if displayName := benchmarkQueryDisplayName(rm, o.benchmarkQuerySet, o.benchmarkWorkload, o.benchmarkQueryStyle, qName); displayName != qName {
+				query["displayName"] = displayName
+			}
+			if hasIndexIO {
+				query["indexReadBytes"] = indexIO.ReadBytes
+				query["indexHitBytes"] = indexIO.HitBytes
+				query["indexRead"] = indexIO.Read
+				query["indexHit"] = indexIO.Hit
+			}
+			if hasUpdates {
+				query["updates"] = updateStats.CompletedUpdates
+			}
+			if hasUpdates && hasWAL {
+				query["walBytes"] = walStats.Bytes
+				query["walBytesPerUpdate"] = walBytesPerUpdate(walStats.Bytes, walStats.CompletedUpdates)
+			}
+			queries[qName] = query
 		}
 
 		var endTime int64
@@ -863,19 +1070,25 @@ func (o *Output) getExportData() map[string]interface{} {
 			endTime = now
 		}
 
-		runs[name] = map[string]interface{}{
-			"name":          rm.Name,
-			"backend":       rm.Backend,
-			"container":     rm.Container,
-			"alias":         rm.Alias,
-			"color":         rm.Color,
-			"chart":         rm.Chart,
-			"ingestRate":    rm.IngestRate,
-			"totalIngested": rm.TotalIngested,
-			"startTime":     rm.StartTime,
-			"endTime":       endTime,
-			"queries":       queries,
+		run := map[string]interface{}{
+			"name":            rm.Name,
+			"backend":         rm.Backend,
+			"container":       rm.Container,
+			"alias":           rm.Alias,
+			"color":           rm.Color,
+			"chart":           rm.Chart,
+			"ingestRate":      rm.IngestRate,
+			"totalIngested":   rm.TotalIngested,
+			"startTime":       rm.StartTime,
+			"endTime":         endTime,
+			"queries":         queries,
+			"prewarmProgress": rm.PrewarmProgress,
+			"prewarming":      rm.Prewarming,
 		}
+		if rm.UpdateMetrics != nil {
+			run["updateMetrics"] = rm.UpdateMetrics
+		}
+		runs[name] = run
 	}
 
 	containers := make(map[string]interface{})
@@ -896,8 +1109,14 @@ func (o *Output) getExportData() map[string]interface{} {
 		"backends":   buildBackendsBlock(),
 		"containers": containers,
 	}
+	if diagnostics := metrics.GetPostgresDiagnostics(); len(diagnostics) > 0 {
+		out["postgresDiagnostics"] = diagnostics
+	}
 	if meta := readMetaEnv(); meta != nil {
 		out["meta"] = meta
+	}
+	if o.data.SelectedQuery != "" {
+		out["selectedQuery"] = o.data.SelectedQuery
 	}
 	addRunCaptures(out)
 	return out
@@ -932,7 +1151,7 @@ func aggregateExportData(rawData map[string]interface{}, broadcast, window time.
 
 		run := make(map[string]interface{})
 		for k, v := range rm {
-			if k != "queries" {
+			if k != "queries" && k != "updateMetrics" {
 				run[k] = v
 			}
 		}
@@ -973,7 +1192,7 @@ func aggregateExportData(rawData map[string]interface{}, broadcast, window time.
 				queryQPS = float64(len(latencies)) / runDuration
 			}
 
-			queries[qName] = map[string]interface{}{
+			query := map[string]interface{}{
 				"name":     qm["name"],
 				"vus":      qm["vus"],
 				"executor": qm["executor"],
@@ -987,6 +1206,12 @@ func aggregateExportData(rawData map[string]interface{}, broadcast, window time.
 				"timeline": timeline,
 				"query":    qm["query"],
 			}
+			for _, key := range []string{"displayName", "indexReadBytes", "indexHitBytes", "indexRead", "indexHit", "updates", "walBytes", "walBytesPerUpdate"} {
+				if value, ok := qm[key]; ok {
+					query[key] = value
+				}
+			}
+			queries[qName] = query
 		}
 
 		// Compute avgIngestRate
@@ -1024,68 +1249,67 @@ func aggregateExportData(rawData map[string]interface{}, broadcast, window time.
 	return result
 }
 
+func walBytesPerUpdate(walBytes, updates uint64) float64 {
+	if updates == 0 {
+		return 0
+	}
+	return float64(walBytes) / float64(updates)
+}
+
 // buildTimeline creates timeline points from raw latencies/timestamps.
 func buildTimeline(latencies []float64, timestamps []int64, hitCounts []int64, broadcast, window time.Duration) []TimelinePoint {
-	if len(timestamps) == 0 {
+	sampleCount := min(len(latencies), len(timestamps))
+	broadcastMs := broadcast.Milliseconds()
+	if sampleCount == 0 || broadcastMs <= 0 {
 		return nil
 	}
 
-	broadcastMs := broadcast.Milliseconds()
 	windowMs := window.Milliseconds()
 	startTime := timestamps[0]
-	endTime := timestamps[len(timestamps)-1]
+	endTime := timestamps[sampleCount-1]
 
 	var timeline []TimelinePoint
-	for t := startTime; t <= endTime; t += broadcastMs {
-		var windowLat []float64
-		var windowHits []int64
-
+	for pointTime := startTime; ; pointTime = min(pointTime+broadcastMs, endTime) {
+		var windowStart int64
 		if windowMs > 0 {
-			// Sliding window: gather samples within [t-window, t]
-			wStart := t - windowMs
-			for i, ts := range timestamps {
-				if ts > wStart && ts <= t {
-					windowLat = append(windowLat, latencies[i])
-					if i < len(hitCounts) {
-						windowHits = append(windowHits, hitCounts[i])
-					}
-				}
-			}
+			windowStart = pointTime - windowMs
 		} else {
-			// Non-overlapping: gather samples within (t-broadcast, t]
-			wStart := t - broadcastMs
-			for i, ts := range timestamps {
-				if ts > wStart && ts <= t {
-					windowLat = append(windowLat, latencies[i])
-					if i < len(hitCounts) {
-						windowHits = append(windowHits, hitCounts[i])
-					}
-				}
-			}
+			windowStart = pointTime - broadcastMs
 		}
-
-		if len(windowLat) == 0 {
-			continue
-		}
-
-		var avgHits float64
-		if len(windowHits) > 0 {
-			var sum int64
-			for _, h := range windowHits {
-				sum += h
-			}
-			avgHits = float64(sum) / float64(len(windowHits))
-		}
-
-		timeline = append(timeline, TimelinePoint{
-			Time:  t,
-			P50:   percentile(windowLat, 50),
-			P90:   percentile(windowLat, 90),
-			P95:   percentile(windowLat, 95),
-			P99:   percentile(windowLat, 99),
-			Count: len(windowLat),
-			Hits:  avgHits,
+		startIndex := sort.Search(sampleCount, func(i int) bool {
+			return timestamps[i] > windowStart
 		})
+		endIndex := sort.Search(sampleCount, func(i int) bool {
+			return timestamps[i] > pointTime
+		})
+		windowLat := latencies[startIndex:endIndex]
+
+		if len(windowLat) > 0 {
+			hitEnd := min(endIndex, len(hitCounts))
+			hitStart := min(startIndex, hitEnd)
+			windowHits := hitCounts[hitStart:hitEnd]
+			var avgHits float64
+			if len(windowHits) > 0 {
+				var sum int64
+				for _, h := range windowHits {
+					sum += h
+				}
+				avgHits = float64(sum) / float64(len(windowHits))
+			}
+
+			timeline = append(timeline, TimelinePoint{
+				Time:  pointTime,
+				P50:   percentile(windowLat, 50),
+				P90:   percentile(windowLat, 90),
+				P95:   percentile(windowLat, 95),
+				P99:   percentile(windowLat, 99),
+				Count: len(windowLat),
+				Hits:  avgHits,
+			})
+		}
+		if pointTime == endTime {
+			break
+		}
 	}
 
 	return timeline
