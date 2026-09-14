@@ -25,8 +25,10 @@ existing loader parses CSV records, including embedded newlines, and uses
 PostgreSQL binary COPY or Elasticsearch bulk requests. PostgreSQL's generated
 `tsvector` is computed during import.
 
-Images are pinned by the Docker configuration. All PostgreSQL tuning settings
-use defaults; only the required extension preloads are configured. The index
+Images are pinned by the Docker configuration. During both `create` and `run`,
+each container defaults to 8 CPUs and 32 GB of memory. Every PostgreSQL backend
+uses `shared_buffers=24GB`; other PostgreSQL tuning settings use defaults,
+with the required extension preloads configured. The index
 definitions preserve the existing plain backend configurations: ParadeDB's
 default tokenizer with eight target segments, the PostgreSQL `simple` text
 configuration for PostgreSQL and pg_textsearch, and Elasticsearch's `standard`
@@ -78,7 +80,7 @@ The Makefiles serialize `create` and `run` within each project.
 | `WORKLOAD`          | `topk`                                   | `topk` or `count`                                                                  |
 | `QUERY_STYLE`       | `disjunction`                            | `conjunction`, `disjunction`, `phrase`, or `mixed`                                 |
 | `BACKENDS`          | All compatible backends                  | Comma-separated backend names in execution order                                   |
-| `VUS`               | `1`                                      | Concurrent query workers per backend                                               |
+| `VUS`               | `8`                                      | Concurrent query workers per backend                                               |
 | `DURATION`          | `60s`                                    | Full measured duration per backend                                                 |
 | `PREWARM`           | `10s`                                    | Unmeasured queries before each measured phase; `0s` disables warm-up               |
 | `COOLDOWN`          | `0s`                                     | Host filesystem sync and idle time after stopping a backend, before the next phase |
@@ -87,8 +89,9 @@ The Makefiles serialize `create` and `run` within each project.
 | `QUERIES`           | Dataset's `queries.json`                 | Path to another compatible query file                                              |
 | `OUTPUT`            | `live`                                   | `live`, `json`, `html`, or a comma-separated combination                           |
 | `OUT_DIR`           | `out/<dataset>-<workload>-<query-style>` | Logs and timestamped dashboard exports                                             |
-| `CPUS`              | `4`                                      | Docker CPU limit per backend                                                       |
-| `MEMORY`            | `8g`                                     | Docker memory limit per backend                                                    |
+| `CPUS`              | `8`                                      | Docker CPU limit per backend                                                       |
+| `MEMORY`            | `32g`                                    | Docker memory limit per backend                                                    |
+| `SHARED_BUFFERS`    | `24GB`                                   | PostgreSQL shared buffers during both creation and benchmark runs                  |
 | `POSTGRES_SHM_SIZE` | `16g`                                    | Docker `/dev/shm` capacity for PostgreSQL backends                                 |
 | `WORKERS`           | `1`                                      | Parallel workers during CSV loading                                                |
 | `BATCH_SIZE`        | `10000`                                  | Rows per load batch                                                                |
@@ -150,8 +153,8 @@ JavaScript unit tests. No npm dependencies are needed.
 For local fixtures or externally stored data, `DATA_GZ`, `DATA_CSV`, and
 `CHECKSUMS` can override the default file paths. `CHECKSUMS` must contain a
 `data.csv` SHA-256 entry matching that CSV. `STATE_DIR` can also be overridden.
-Use absolute paths for overrides. Increasing `MEMORY` or `CPUS` changes Docker
-limits without overriding PostgreSQL GUCs.
+Use absolute paths for overrides. `MEMORY` and `CPUS` control Docker limits;
+`SHARED_BUFFERS` controls PostgreSQL's buffer allocation independently.
 
 ```bash
 make -f Makefile.wikipedia help

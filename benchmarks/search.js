@@ -10,7 +10,7 @@ const names = selectBackends(
   workload,
   style,
 );
-const vus = Number(__ENV.VUS || "1");
+const vus = Number(__ENV.VUS || "8");
 const topK = Number(__ENV.TOP_K || "10");
 if (!Number.isSafeInteger(vus) || vus < 1)
   throw new Error("VUS must be a positive integer");

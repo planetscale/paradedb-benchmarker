@@ -4,8 +4,9 @@ x-postgres: &postgres
     POSTGRES_PASSWORD: postgres
     POSTGRES_DB: benchmark
   shm_size: ${POSTGRES_SHM_SIZE:-16g}
-  cpus: ${CPUS:-4}
-  mem_limit: ${MEMORY:-8g}
+  cpus: ${CPUS:-8}
+  mem_limit: ${MEMORY:-32g}
+  command: ["postgres", "-c", "shared_buffers=${SHARED_BUFFERS:-24GB}"]
   stop_grace_period: 10m
   healthcheck:
     test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d benchmark"]
@@ -20,7 +21,14 @@ services:
     build:
       context: ../docker/paradedb
     container_name: ${PROJECT}-paradedb
-    command: ["postgres", "-c", "shared_preload_libraries=pg_search,pg_cron"]
+    command:
+      [
+        "postgres",
+        "-c",
+        "shared_buffers=${SHARED_BUFFERS:-24GB}",
+        "-c",
+        "shared_preload_libraries=pg_search,pg_cron",
+      ]
     ports: ["127.0.0.1:${PARADEDB_PORT}:5432"]
     volumes:
       - paradedb_data:/var/lib/postgresql/18/docker
@@ -31,7 +39,14 @@ services:
     build:
       context: ../docker/pg_textsearch
     container_name: ${PROJECT}-pg_textsearch
-    command: ["postgres", "-c", "shared_preload_libraries=pg_textsearch"]
+    command:
+      [
+        "postgres",
+        "-c",
+        "shared_buffers=${SHARED_BUFFERS:-24GB}",
+        "-c",
+        "shared_preload_libraries=pg_textsearch",
+      ]
     ports: ["127.0.0.1:${PG_TEXTSEARCH_PORT}:5432"]
     volumes:
       - pg_textsearch_data:/var/lib/postgresql/18/docker
@@ -47,8 +62,8 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
     container_name: ${PROJECT}-elasticsearch
-    cpus: ${CPUS:-4}
-    mem_limit: ${MEMORY:-8g}
+    cpus: ${CPUS:-8}
+    mem_limit: ${MEMORY:-32g}
     environment:
       discovery.type: single-node
       xpack.security.enabled: "false"

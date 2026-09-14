@@ -24,14 +24,15 @@ BACKENDS ?= $(ALL_BACKENDS)
 else
 BACKENDS ?= paradedb,postgres,elasticsearch
 endif
-VUS ?= 1
+VUS ?= 8
 DURATION ?= 60s
 PREWARM ?= 10s
 COOLDOWN ?= 0s
 SEED ?= 1592614637
 TOP_K ?= 10
-CPUS ?= 4
-MEMORY ?= 8g
+CPUS ?= 8
+MEMORY ?= 32g
+SHARED_BUFFERS ?= 24GB
 POSTGRES_SHM_SIZE ?= 16g
 WORKERS ?= 1
 BATCH_SIZE ?= 10000
@@ -44,7 +45,7 @@ K6 := $(REPO_ROOT)/k6
 
 export DATASET DATASET_DIR REPO_ROOT THIS_MAKEFILE CONFIG_DIR PROJECT STATE_DIR
 export DATA_GZ DATA_CSV CHECKSUMS QUERIES WORKLOAD QUERY_STYLE BACKENDS
-export VUS DURATION PREWARM COOLDOWN SEED TOP_K CPUS MEMORY POSTGRES_SHM_SIZE
+export VUS DURATION PREWARM COOLDOWN SEED TOP_K CPUS MEMORY SHARED_BUFFERS POSTGRES_SHM_SIZE
 export PARADEDB_PORT POSTGRES_PORT PG_TEXTSEARCH_PORT ELASTICSEARCH_PORT
 export WORKERS BATCH_SIZE BUILD RECREATE OUTPUT OUT_DIR LOADER K6
 
@@ -60,9 +61,10 @@ help:
 	  'WORKLOAD=topk|count   QUERY_STYLE=conjunction|disjunction|phrase|mixed' \
 	  'pg_textsearch supports only WORKLOAD=topk QUERY_STYLE=disjunction.' \
 	  'BACKENDS accepts comma-separated names; order controls benchmark order.' \
-	  'VUS=1 DURATION=60s PREWARM=10s COOLDOWN=0s TOP_K=10 SEED=1592614637' \
+	  'VUS=8 DURATION=60s PREWARM=10s COOLDOWN=0s TOP_K=10 SEED=1592614637' \
 	  'QUERIES=<json-path> OUTPUT=live (or json, html, or a comma-separated combination) OUT_DIR=<directory>' \
-	  'CPUS=4 MEMORY=8g POSTGRES_SHM_SIZE=16g (Docker limits; PostgreSQL tuning uses defaults)' \
+	  'CPUS=8 MEMORY=32g POSTGRES_SHM_SIZE=16g (Docker limits per backend)' \
+	  'SHARED_BUFFERS=24GB (all PostgreSQL backends, during create and run)' \
 	  'WORKERS=1 BATCH_SIZE=10000 control CSV bulk loading.' \
 	  'create resumes completed stages. RECREATE=1 explicitly reloads selected backends.' \
 	  'BUILD=0 reuses installed images. PROJECT=<name> selects an isolated set of volumes.' \
