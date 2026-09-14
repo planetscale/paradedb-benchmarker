@@ -720,7 +720,8 @@ func (s *phaseState) waitForPrewarm(ctx context.Context, index int) (time.Time, 
 			s.mu.Unlock()
 			return time.Time{}, fmt.Errorf("phase %s advanced before query prewarm", s.spec.backends[index])
 		}
-		if s.active.prewarming {
+		// Measurement can start before every worker observes this transition.
+		if s.active.prewarming || s.active.measuring {
 			deadline := s.active.prewarmDeadline
 			s.mu.Unlock()
 			return deadline, nil

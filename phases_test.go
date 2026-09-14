@@ -46,6 +46,42 @@ func startTestMeasurement(state *phaseState, index int) error {
 	return state.startMeasurement(index)
 }
 
+func TestPhaseWorkerCanObservePrewarmAfterMeasurementHasStarted(t *testing.T) {
+	state := testPhaseState([]string{"backend"}, 2, false)
+	ctx, cancel := context.WithTimeout(context.Background(), 250*time.Millisecond)
+	defer cancel()
+	for range 2 {
+		if _, err := state.arriveQuery(ctx, 0, 0); err != nil {
+			t.Fatal(err)
+		}
+		state.finishWarmWorker(0)
+	}
+	if err := startTestMeasurement(state, 0); err != nil {
+		t.Fatal(err)
+	}
+
+	// Another worker can open measurement before this worker observes the
+	// prewarm notification, particularly when the prewarm duration is zero.
+	deadline, err := state.waitForPrewarm(ctx, 0)
+	if err != nil {
+		t.Fatalf("late worker missed the prewarm transition: %v", err)
+	}
+	if !deadline.Equal(state.active.prewarmDeadline) {
+		t.Fatalf("prewarm deadline = %v, want %v", deadline, state.active.prewarmDeadline)
+	}
+	if starter, err := state.claimMeasurementStart(0); err != nil || starter {
+		t.Fatalf("late worker = measurement starter %v, error %v", starter, err)
+	}
+	if _, err := state.waitForMeasurement(ctx, 0); err != nil {
+		t.Fatalf("late worker could not join measurement: %v", err)
+	}
+	state.finishWorker(0)
+	state.finishWorker(0)
+	if err := state.finishFinal(0); err != nil {
+		t.Fatalf("phase could not complete: %v", err)
+	}
+}
+
 func TestPhaseStateWarmsAndMeasuresBackendsInOrder(t *testing.T) {
 	state := testPhaseState([]string{"paradedb", "custom"}, 2, false)
 	ctx := context.Background()
