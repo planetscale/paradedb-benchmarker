@@ -1,6 +1,6 @@
-.PHONY: all build k6 loader viewer clean test fmt lint deps help
+.PHONY: all build k6 loader viewer paradedb-image pg-textsearch-image postgres-images clean test fmt lint deps help
 
-GOBIN := $(shell go env GOPATH)/bin
+GOBIN := $(shell if command -v go >/dev/null 2>&1; then go env GOPATH; else printf '%s/go' "$$HOME"; fi)/bin
 XK6 := $(GOBIN)/xk6
 
 # Default target
@@ -32,6 +32,16 @@ viewer:
 	@mkdir -p bin
 	go build -o bin/dashboard-viewer ./cmd/dashboard-viewer
 	@echo "Done: ./bin/dashboard-viewer"
+
+# Build ParadeDB 0.25.2 on the pinned PostgreSQL minor release
+paradedb-image:
+	docker build -t benchmarker-paradedb:pg18.6 docker/paradedb
+
+# Build the pg_textsearch PostgreSQL image from the pinned upstream release
+pg-textsearch-image:
+	docker build -t benchmarker-pg-textsearch:pg18.6 docker/pg_textsearch
+
+postgres-images: paradedb-image pg-textsearch-image
 
 # Run tests
 test:
@@ -65,6 +75,9 @@ help:
 	@echo "  k6       Build k6 with xk6-search extension"
 	@echo "  loader   Build the loader CLI to bin/"
 	@echo "  viewer   Build the dashboard-viewer CLI to bin/"
+	@echo "  paradedb-image Build ParadeDB 0.25.2 on PostgreSQL 18.6"
+	@echo "  pg-textsearch-image Build benchmarker-pg-textsearch:pg18.6"
+	@echo "  postgres-images Build both PostgreSQL 18.6 extension images"
 	@echo "  test     Run tests"
 	@echo "  fmt      Format code"
 	@echo "  lint     Run golangci-lint"

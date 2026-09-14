@@ -1,8 +1,11 @@
 services:
   paradedb:
-    profiles: [paradedb, all]
-    image: paradedb/paradedb:v0.23.1-pg18
-    container_name: paradedb
+    image: benchmarker-paradedb:pg18.6
+    shm_size: ${POSTGRES_SHM_SIZE:-16g}
+    build:
+      context: ./docker/paradedb
+      args:
+        PARADEDB_IMAGE: paradedb/paradedb:v0.25.2-pg18
     privileged: true
     cap_add:
       - SYS_ADMIN
@@ -12,12 +15,49 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: benchmark
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 8G
+        reservations:
+          cpus: "2"
+          memory: 4G
+    cpus: 4
+    mem_limit: 8g
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=pg_search,pg_cron"
+    profiles: [paradedb, all]
+    container_name: paradedb
     ports:
       - "5432:5432"
     volumes:
       - paradedb_data:/var/lib/postgresql/18/docker
+
+  pg_textsearch:
+    image: benchmarker-pg-textsearch:pg18.6
+    shm_size: ${POSTGRES_SHM_SIZE:-16g}
+    build:
+      context: ./docker/pg_textsearch
+      args:
+        PG_TEXTSEARCH_VERSION: "1.4.0"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: benchmark
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test:
+        [
+          "CMD-SHELL",
+          "test -f /usr/share/postgresql/18/extension/pg_textsearch.control && pg_isready -U postgres",
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -29,41 +69,23 @@ services:
         reservations:
           cpus: "2"
           memory: 4G
-    # Compose-compatible limits (deploy.resources is ignored outside Swarm)
     cpus: 4
     mem_limit: 8g
     command:
       - "postgres"
       - "-c"
-      - "shared_preload_libraries=pg_search,pg_cron"
-      - "-c"
-      - "shared_buffers=2GB"
-      - "-c"
-      - "effective_cache_size=4GB"
-      - "-c"
-      - "work_mem=256MB"
-      - "-c"
-      - "maintenance_work_mem=1GB"
-      - "-c"
-      - "checkpoint_completion_target=0.9"
-      - "-c"
-      - "wal_buffers=256MB"
-      - "-c"
-      - "random_page_cost=1.1"
-      - "-c"
-      - "effective_io_concurrency=200"
-      - "-c"
-      - "max_parallel_workers_per_gather=2"
-      - "-c"
-      - "max_parallel_workers=2"
-      - "-c"
-      - "max_worker_processes=16"
-      - "-c"
-      - "jit=off"
+      - "shared_preload_libraries=pg_textsearch"
+    profiles: [pg_textsearch, all]
+    container_name: pg_textsearch
+    ports:
+      - "5435:5432"
+    volumes:
+      - pg_textsearch_data:/var/lib/postgresql/18/docker
 
   postgres:
     profiles: [postgres, all]
-    image: postgres:18
+    image: postgres:18.6-bookworm
+    shm_size: ${POSTGRES_SHM_SIZE:-16g}
     container_name: postgres
     environment:
       POSTGRES_USER: postgres
@@ -88,32 +110,6 @@ services:
           memory: 4G
     cpus: 4
     mem_limit: 8g
-    command:
-      - "postgres"
-      - "-c"
-      - "shared_buffers=2GB"
-      - "-c"
-      - "effective_cache_size=4GB"
-      - "-c"
-      - "work_mem=256MB"
-      - "-c"
-      - "maintenance_work_mem=1GB"
-      - "-c"
-      - "checkpoint_completion_target=0.9"
-      - "-c"
-      - "wal_buffers=256MB"
-      - "-c"
-      - "random_page_cost=1.1"
-      - "-c"
-      - "effective_io_concurrency=200"
-      - "-c"
-      - "max_parallel_workers_per_gather=2"
-      - "-c"
-      - "max_parallel_workers=2"
-      - "-c"
-      - "max_worker_processes=16"
-      - "-c"
-      - "jit=off"
 
   elasticsearch:
     profiles: [elasticsearch, all]
@@ -256,6 +252,7 @@ services:
 
 volumes:
   paradedb_data:
+  pg_textsearch_data:
   postgres_data:
   elasticsearch_data:
   opensearch_data:

@@ -52,13 +52,14 @@ export function queryTest() {
 
 The `db` module (`k6/x/database`) provides:
 
-| Function                      | Returns     | Description                                                                                                                                                                               |
-| ----------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `db.backends(config)`         | `Backends`  | Initializes backend drivers and Docker metrics collector from config                                                                                                                      |
-| `db.metrics(config)`          | `Collector` | Creates a standalone Docker container metrics collector (use `backends.addDockerMetricsCollector()` instead for most cases)                                                               |
-| `db.timer({ duration, gap })` | `Timer`     | Creates a phase timer for staggering scenarios                                                                                                                                            |
-| `db.loader()`                 | `Loader`    | Creates a CSV document reader for ingest or update benchmarks                                                                                                                             |
-| `db.terms(data)`              | `Terms`     | Loads a JSON array of query strings to avoid caching bias. `terms.next()` cycles sequentially, `terms.random()` picks randomly. Accepts a JSON string via `open()` or a k6 `SharedArray`. |
+| Function                      | Returns            | Description                                                                                                                                                                               |
+| ----------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `db.backends(config)`         | `Backends`         | Initializes backend drivers and Docker metrics collector from config                                                                                                                      |
+| `db.metrics(config)`          | `Collector`        | Creates a standalone Docker container metrics collector (use `backends.addDockerMetricsCollector()` instead for most cases)                                                               |
+| `db.timer({ duration, gap })` | `Timer`            | Creates a phase timer for staggering scenarios                                                                                                                                            |
+| `db.phases(config)`           | `PhaseCoordinator` | Coordinates backend phases, warm-up, query workers, and optional paced updates                                                                                                            |
+| `db.loader()`                 | `Loader`           | Creates a CSV document reader for ingest or update benchmarks                                                                                                                             |
+| `db.terms(data)`              | `Terms`            | Loads a JSON array of query strings to avoid caching bias. `terms.next()` cycles sequentially, `terms.random()` picks randomly. Accepts a JSON string via `open()` or a k6 `SharedArray`. |
 
 ## Backend Configuration
 
@@ -85,16 +86,23 @@ backends.get("paradedb-v2").query(...);
 backends.get("elasticsearch").query(...);
 ```
 
+For an existing remote database, use its driver type, a display alias, a
+connection from `__ENV`, and `container: ""`. This disables Docker metrics and
+container shutdown at phase boundaries. PostgreSQL index I/O then uses a
+client-side baseline, and PostgreSQL diagnostic counters are sampled without
+resetting server statistics.
+
 ## Available Backend Types
 
 The framework is database-agnostic - the current backends and datasets are focused on full-text search, but the same infrastructure works for any query workload. See [CONTRIBUTING.md](../CONTRIBUTING.md) for how to add a new backend.
 
 **PostgreSQL-based** (shared driver, different extensions):
 
-| Type       | Description                    |
-| ---------- | ------------------------------ |
-| `paradedb` | ParadeDB with pg_search (BM25) |
-| `postgres` | PostgreSQL                     |
+| Type            | Description                         |
+| --------------- | ----------------------------------- |
+| `paradedb`      | ParadeDB with pg_search (BM25)      |
+| `pg_textsearch` | pg_textsearch with BM25 I/O metrics |
+| `postgres`      | PostgreSQL with GIN I/O metrics     |
 
 **Elasticsearch-based** (shared driver):
 
@@ -109,6 +117,9 @@ The framework is database-agnostic - the current backends and datasets are focus
 | ------------ | ------------------------- |
 | `clickhouse` | ClickHouse                |
 | `mongodb`    | MongoDB with Atlas Search |
+
+Backend registration selects the connection and telemetry. Define analyzers,
+stop words, tables, and indexes in the dataset's lifecycle scripts.
 
 ## Benchmark Patterns
 
@@ -226,6 +237,52 @@ export const options = { scenarios };
 - `advanceAndGet()` / `next()` - advances to the next phase and returns its startTime; use when starting a new phase
 - `backends.addDockerMetricsCollector(scenarios, timer)` - adds a `metrics_collector` scenario covering the full test duration
 - Also accepts a duration string: `backends.addDockerMetricsCollector(scenarios, "500s")`
+
+For ParadeDB, pg_textsearch, and native PostgreSQL FTS backends, the helper also resets current-database
+statistics during initialization and polls cumulative search-index reads and
+shared-buffer hits once per second. It schedules one final snapshot one second
+after the supplied duration, so the exported dashboard contains counters from
+after the workload has stopped. The configured PostgreSQL role must be allowed
+to call `pg_stat_reset()`.
+
+### Paced random updates
+
+The phase coordinator supports one companion updater VU for each backend query
+phase. Create it with `db.phases({ backends, duration, prewarm, vus, updates: true })`,
+where `vus` counts query workers only. Workload scripts supply the k6 scenarios:
+each query VU calls `phases.run(backend, warmIterations, warm, startMeasurement, query)`;
+the updater VU calls `phases.runUpdates(backend, rate, prewarmUpdate, update)`.
+The callbacks run on their owning VU, and the coordinator shares the query
+phase's measurement window with the updater.
+
+For PostgreSQL tables with a `body` column, obtain the update callbacks through
+`backends.randomDocumentPrewarmer(backend, table)` and
+`backends.randomDocumentUpdater(backend, table)`. Random-document updates are an
+optional driver capability; the Elasticsearch/OpenSearch drivers do not
+implement this capability. Their ordinary `update()` operations remain available.
+
+Before the measured phase, every enabled updater performs two ordinary random
+updates, waiting one second after each. These committed startup mutations do
+not emit update metrics or increment `UPDATES`. During measurement,
+a rate of `10` schedules update starts every 100ms. Slots
+missed while an update is still running are skipped, so the setting is a pacing
+limit rather than a guaranteed completion rate.
+
+An update appends one ASCII space to `body`, so analysis produces the same
+tokens while the backing search index still performs normal document-update
+work. The dashboard's `UPDATES` value is the live number of
+datasource-confirmed document updates.
+
+When updates are disabled, omit the updater scenario and callbacks and set
+`updates: false` on the phase coordinator. Updates persist in the datasource
+and create normal PostgreSQL WAL and dead tuples; reload or restore the dataset
+when a comparison requires an identical physical starting state.
+
+For PostgreSQL backends, update-side index accesses also contribute to the
+cumulative index read/hit counters. The `PER QUERY` value consequently
+represents total observed search-index buffer traffic per successful query
+while updates are enabled; it is not a query-only byte count and does not
+measure bytes written.
 
 ### Pattern 3: Parallel Query + Ingest
 
@@ -418,13 +475,28 @@ The `nextBatchSwapped()` method lazily builds a copy of all documents with adjac
 
 Each backend returned by `backends.get()` also exposes:
 
-| Method                | Description                                       |
-| --------------------- | ------------------------------------------------- |
-| `setTimeout(seconds)` | Set the query timeout for this backend            |
-| `insert(table, doc)`  | Insert a single document                          |
-| `update(table, doc)`  | Update a single document (keyed by `id` or `_id`) |
+| Method                    | Description                                       |
+| ------------------------- | ------------------------------------------------- |
+| `setTimeout(seconds)`     | Set the query timeout for this backend            |
+| `prewarm(query, ...args)` | Execute a query without emitting query metrics    |
+| `insert(table, doc)`      | Insert a single document                          |
+| `update(table, doc)`      | Update a single document (keyed by `id` or `_id`) |
 
 Call `backends.setTimeout(seconds)` to set the timeout on all backends at once, or `backends.close()` to close all connections.
+
+`prewarm()` uses the same backend driver and arguments as `query()`, but it does
+not emit backend initialization, query latency/hit, query-pattern, or scenario
+samples. It returns the same `{ hits, latencyMs, error? }` shape as `query()`.
+Scripts can use it to run concurrent `pg_prewarm` block ranges for
+PostgreSQL-backed indexes. The phase coordinator then runs the ordinary `query()`
+callback on every connected VU for the configured prewarm duration. The phase
+coordinator suppresses metrics for that portion and gives in-flight queries 250
+milliseconds to drain naturally at the logical boundary. Only remaining
+stragglers are canceled, so the same VUs retain their cadence and continue the
+global query cursor into the full measured duration. If a custom run records
+PostgreSQL index-I/O telemetry, call
+`backends.resetIndexIOStats([aliases...])` after the last successful warm-up
+operation so warm-up reads are excluded from measured totals.
 
 ## Loading Data from k6 Scripts
 

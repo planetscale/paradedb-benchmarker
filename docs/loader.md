@@ -11,6 +11,9 @@ The loader CLI handles bulk data loading with lifecycle scripts. It reads your d
 # Load into a specific backend
 ./bin/loader load --backend paradedb ./datasets/sample
 
+# Load a dataset that supplies pg_textsearch pre/post scripts
+./bin/loader load --backend pg_textsearch ./datasets/my-dataset
+
 # Load with parallel workers
 ./bin/loader load --backend paradedb --workers 4 --batch-size 10000 ./datasets/sample
 
@@ -36,6 +39,7 @@ The loader reads connection strings from environment variables:
 
 ```bash
 export PARADEDB_URL="postgres://postgres:postgres@localhost:5432/benchmark"
+export PG_TEXTSEARCH_URL="postgres://postgres:postgres@localhost:5435/benchmark"
 export POSTGRES_URL="postgres://postgres:postgres@localhost:5433/benchmark"
 export ELASTICSEARCH_URL="https://elastic:elastic@localhost:9200"
 export OPENSEARCH_URL="http://localhost:9201"
