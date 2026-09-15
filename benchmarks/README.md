@@ -5,6 +5,9 @@ definitions in `benchmarks/compose.yml`, and setup recipes in
 `benchmarks/Makefile.common`. The two Makefile entry points select the dataset
 and its default ports. No dataset-specific Go code is needed.
 
+See [SOURCES.md](../SOURCES.md) for the corpus and query origins, preparation,
+licensing references, and checksums.
+
 ## Create the databases
 
 Place the dataset's `data.csv.gz` in `datasets/wikipedia/` or
