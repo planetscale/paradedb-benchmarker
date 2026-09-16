@@ -1,0 +1,9 @@
+{
+  "source_url": "https://archive.org/details/stackexchange_20260630_sakura",
+  "content": "Post bodies and comment text from the existing sampled Stack Exchange CSV.",
+  "columns": [
+    "id",
+    "body"
+  ],
+  "transformation": "Preserve the existing validated CSV byte for byte. No new sampling, normalization, or tokenization."
+}

@@ -1,0 +1,13 @@
+[
+  {
+    "index": "documents",
+    "endpoint": "_settings",
+    "body": { "index": { "refresh_interval": "1s" } }
+  },
+  { "index": "documents", "endpoint": "_refresh" },
+  {
+    "index": "documents",
+    "endpoint": "_forcemerge",
+    "params": { "max_num_segments": 1 }
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "csv": {
+    "file": "data.csv",
+    "bytes": 8093810896,
+    "sha256": "7e4cba73338f9aba3a344de9f7d63007fa51f0f4ee85d70d7bd34fe95ff6e9a8"
+  },
+  "gzip": {
+    "bytes": 2685744356,
+    "sha256": "a9e0e7df0246e78edb722355809af6e671d7617b7b76904c98e169f5967de0ba",
+    "level": 9,
+    "part_size_bytes": 2000000000,
+    "parts": [
+      {
+        "file": "data.csv.gz.part0000",
+        "bytes": 2000000000,
+        "sha256": "518f34df14ba8648ffbc286f0bf9dbfd055bc08bd09735c99d90d756f356c2d8"
+      },
+      {
+        "file": "data.csv.gz.part0001",
+        "bytes": 685744356,
+        "sha256": "5b5c5855c7713941ef7a85b3cbeab43d95c7c2926dcb0fc9ee07b2bef499f108"
+      }
+    ]
+  }
+}

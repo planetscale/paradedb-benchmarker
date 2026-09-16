@@ -6,6 +6,13 @@ dashboard*.html
 # Datasets - only include sample (everything in it)
 datasets/*
 !datasets/sample
+!datasets/wikipedia/
+!datasets/stackexchange/
+datasets/wikipedia/data.csv*
+datasets/stackexchange/data.csv*
+!datasets/wikipedia/data.csv.gz.part[0-9][0-9][0-9][0-9]
+!datasets/stackexchange/data.csv.gz.part[0-9][0-9][0-9][0-9]
+/benchmarks/.state/
 
 # Build outputs
 *.exe

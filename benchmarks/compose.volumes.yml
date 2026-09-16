@@ -1,0 +1,35 @@
+# Optional host storage; Make includes this only when VOLUME_ROOT is set.
+# Keep named volumes so the setup and run targets retain the same lifecycle.
+services:
+  postgres:
+    # PG18 uses this versioned PGDATA path. Replace the legacy mount only for
+    # custom storage; changing it in the base file would hide existing data
+    # held in Docker's anonymous parent volume until that data is migrated.
+    volumes: !override
+      - postgres_data:/var/lib/postgresql/18/docker
+
+volumes:
+  paradedb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${VOLUME_ROOT:?}/${PROJECT}/paradedb
+  pg_textsearch_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${VOLUME_ROOT:?}/${PROJECT}/pg_textsearch
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${VOLUME_ROOT:?}/${PROJECT}/postgres
+  elasticsearch_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${VOLUME_ROOT:?}/${PROJECT}/elasticsearch
