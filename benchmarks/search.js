@@ -1,14 +1,21 @@
 import db from "k6/x/database";
 import exec from "k6/execution";
 import { Counter } from "k6/metrics";
-import { buildRequest, selectBackends, selectQueries } from "./queries.js";
+import {
+  buildRequest,
+  parseUpdatesPerSecond,
+  selectBackends,
+  selectQueries,
+} from "./queries.js";
 
 const workload = __ENV.WORKLOAD || "topk";
 const style = __ENV.QUERY_STYLE || "disjunction";
+const updatesPerSecond = parseUpdatesPerSecond(__ENV.UPDATES_PER_SECOND ?? "0");
 const names = selectBackends(
   __ENV.BACKENDS || "paradedb,postgres,elasticsearch",
   workload,
   style,
+  updatesPerSecond,
 );
 const vus = Number(__ENV.VUS || "8");
 const topK = Number(__ENV.TOP_K || "10");
@@ -37,7 +44,7 @@ const backends = db.backends({
   backends: names.map((type) => ({
     type,
     connection: connections[type],
-    container: `${__ENV.PROJECT}-${type}`,
+    container: `${__ENV.COMPOSE_PROJECT || __ENV.PROJECT}-${type}`,
   })),
 });
 const phases = db.phases({
@@ -45,7 +52,14 @@ const phases = db.phases({
   vus,
   duration: __ENV.DURATION || "60s",
   prewarm: __ENV.PREWARM || "10s",
+  updates: updatesPerSecond > 0,
 });
+const updaters = updatesPerSecond > 0
+  ? Object.fromEntries(names.map((name) => [name, {
+      prewarm: backends.randomDocumentPrewarmer(name, "documents"),
+      update: backends.randomDocumentUpdater(name, "documents"),
+    }]))
+  : {};
 const scenario = (execName, workers) => ({
   executor: "per-vu-iterations",
   vus: workers,
@@ -60,11 +74,25 @@ const scenarios = Object.fromEntries(
     { ...scenario("queryPhase", vus), env: { ACTIVE_BACKEND: name } },
   ]),
 );
+if (updatesPerSecond > 0) {
+  for (const name of names) {
+    scenarios[`${name}_updates`] = {
+      ...scenario("updatePhase", 1),
+      env: { ACTIVE_BACKEND: name },
+    };
+  }
+}
 scenarios.metrics_collector = scenario("collectMetrics", 1);
 const queryErrors = new Counter("benchmark_query_errors");
+const updateErrors = updatesPerSecond > 0
+  ? new Counter("benchmark_update_errors")
+  : null;
 export const options = {
   scenarios,
-  thresholds: { benchmark_query_errors: ["count==0"] },
+  thresholds: {
+    benchmark_query_errors: ["count==0"],
+    ...(updatesPerSecond > 0 ? { benchmark_update_errors: ["count==0"] } : {}),
+  },
 };
 backends.enableIndexIOStats();
 
@@ -98,6 +126,7 @@ export function queryPhase() {
     },
     () => {
       backends.resetIndexIOStats([name]);
+      if (updatesPerSecond > 0) backends.resetWALStats([name]);
       backends.resetPostgresDiagnostics([name]);
     },
     (iteration) => {
@@ -112,15 +141,25 @@ export function queryPhase() {
   );
 }
 
+export function updatePhase() {
+  const name = __ENV.ACTIVE_BACKEND;
+  phases.runUpdates(name, updatesPerSecond, updaters[name].prewarm, () => {
+    const result = updaters[name].update();
+    updateErrors.add(result?.error ? 1 : 0, { backend: name });
+  });
+}
+
 export function collectMetrics() {
   phases.runCollector(
     (name, measuring) => {
       if (measuring) {
+        if (updatesPerSecond > 0) backends.collectWALStats(name);
         backends.collectPostgresDiagnostics(name, false);
         backends.collect();
       }
     },
     (name, hasNext) => {
+      if (updatesPerSecond > 0) backends.collectWALStats(name);
       backends.collectPostgresDiagnostics(name, true);
       backends.collectFinal();
       backends.phaseBoundary(name, hasNext ? __ENV.COOLDOWN || "0s" : "0s");

@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { buildRequest, selectBackends, selectQueries } from "./queries.js";
+import {
+  buildRequest,
+  parseUpdatesPerSecond,
+  selectBackends,
+  selectQueries,
+} from "./queries.js";
 
 const load = (dataset, filename = "queries.json") =>
   JSON.parse(
@@ -10,6 +15,32 @@ const load = (dataset, filename = "queries.json") =>
       "utf8",
     ),
   );
+
+test("paced updates default to zero and reject invalid rates", () => {
+  assert.equal(parseUpdatesPerSecond(), 0);
+  assert.equal(parseUpdatesPerSecond("0"), 0);
+  assert.equal(parseUpdatesPerSecond("10"), 10);
+  assert.equal(parseUpdatesPerSecond("1000000000"), 1000000000);
+  for (const value of ["", "-1", "1.5", "NaN", "Infinity", "1e2", "1000000001"]) {
+    assert.throws(() => parseUpdatesPerSecond(value), /UPDATES_PER_SECOND/);
+  }
+});
+
+test("paced updates require supported backends without changing query-only selection", () => {
+  const all = "paradedb,pg_textsearch,postgres,elasticsearch";
+  assert.deepEqual(selectBackends(all, "topk", "disjunction"), all.split(","));
+  assert.deepEqual(selectBackends(all, "topk", "disjunction", 0), all.split(","));
+  const postgresBackends = "paradedb,pg_textsearch,postgres";
+  assert.deepEqual(
+    selectBackends(postgresBackends, "topk", "disjunction", 10),
+    postgresBackends.split(","),
+  );
+  assert.deepEqual(selectBackends("paradedb,postgres", "count", "mixed", 10), [
+    "paradedb", "postgres",
+  ]);
+  assert.throws(() => selectBackends(all, "topk", "disjunction", 10), /elasticsearch/);
+  assert.throws(() => selectBackends("pg_textsearch", "count", "mixed", 10), /only WORKLOAD=topk/);
+});
 
 test("query traces retain their selected record counts and supported engine forms", () => {
   for (const [dataset, expected] of [

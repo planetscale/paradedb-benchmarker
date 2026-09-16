@@ -6,7 +6,16 @@ export const backendNames = [
 ];
 export const queryStyles = ["conjunction", "disjunction", "phrase"];
 
-export function selectBackends(value, workload, style) {
+export function parseUpdatesPerSecond(value = "0") {
+  const rate = Number(value);
+  if (!/^[0-9]{1,10}$/.test(String(value)) || rate > 1000000000) {
+    throw new Error("UPDATES_PER_SECOND must be an integer between 0 and 1000000000");
+  }
+  return rate;
+}
+
+export function selectBackends(value, workload, style, updatesPerSecond = 0) {
+  const rate = parseUpdatesPerSecond(updatesPerSecond);
   if (!["topk", "count"].includes(workload)) {
     throw new Error("WORKLOAD must be topk or count");
   }
@@ -22,6 +31,11 @@ export function selectBackends(value, workload, style) {
   for (const name of names) {
     if (!backendNames.includes(name))
       throw new Error(`Unknown backend: ${name}`);
+    if (name === "elasticsearch" && rate > 0) {
+      throw new Error(
+        "elasticsearch does not support paced random updates; select PostgreSQL backends or use UPDATES_PER_SECOND=0",
+      );
+    }
     if (
       name === "pg_textsearch" &&
       (workload !== "topk" || style !== "disjunction")

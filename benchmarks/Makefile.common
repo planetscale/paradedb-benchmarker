@@ -10,6 +10,8 @@ THIS_MAKEFILE := $(REPO_ROOT)/Makefile.$(DATASET)
 DATASET_DIR := $(REPO_ROOT)/datasets/$(DATASET)
 CONFIG_DIR := $(REPO_ROOT)/benchmarks
 PROJECT ?= bench-datasets-$(DATASET)
+VOLUME_ROOT ?=
+TARGET_VOLUME_ROOT ?=
 STATE_DIR ?= $(CONFIG_DIR)/.state/$(PROJECT)
 DATA_GZ ?= $(DATASET_DIR)/data.csv.gz
 DATA_CSV ?= $(DATASET_DIR)/data.csv
@@ -25,6 +27,7 @@ else
 BACKENDS ?= paradedb,postgres,elasticsearch
 endif
 VUS ?= 8
+UPDATES_PER_SECOND ?= 0
 DURATION ?= 60s
 PREWARM ?= 10s
 COOLDOWN ?= 0s
@@ -39,6 +42,7 @@ endif
 SHARED_BUFFERS ?= 24GB
 MAINTENANCE_WORK_MEM ?= 24GB
 MAX_PARALLEL_MAINTENANCE_WORKERS ?= 8
+MAX_PARALLEL_WORKERS ?= 8
 POSTGRES_SHM_SIZE ?= 16g
 WORKERS ?= 1
 BATCH_SIZE ?= 10000
@@ -49,35 +53,48 @@ OUT_DIR ?= $(REPO_ROOT)/out/$(DATASET)-$(WORKLOAD)-$(QUERY_STYLE)
 LOADER := $(REPO_ROOT)/bin/loader
 K6 := $(REPO_ROOT)/k6
 
-export DATASET DATASET_DIR REPO_ROOT THIS_MAKEFILE CONFIG_DIR PROJECT STATE_DIR
+export DATASET DATASET_DIR REPO_ROOT THIS_MAKEFILE CONFIG_DIR PROJECT VOLUME_ROOT STATE_DIR
+export TARGET_VOLUME_ROOT
 export DATA_GZ DATA_CSV CHECKSUMS QUERIES WORKLOAD QUERY_STYLE BACKENDS
 export VUS DURATION PREWARM COOLDOWN SEED TOP_K CPUS MEMORY SHARED_BUFFERS POSTGRES_SHM_SIZE
-export MAINTENANCE_WORK_MEM MAX_PARALLEL_MAINTENANCE_WORKERS
+export UPDATES_PER_SECOND
+export MAINTENANCE_WORK_MEM MAX_PARALLEL_MAINTENANCE_WORKERS MAX_PARALLEL_WORKERS
 export PARADEDB_PORT POSTGRES_PORT PG_TEXTSEARCH_PORT ELASTICSEARCH_PORT
 export WORKERS BATCH_SIZE BUILD RECREATE OUTPUT OUT_DIR LOADER K6
 
-COMPOSE = docker compose --project-name "$$PROJECT" --file "$$CONFIG_DIR/compose.yml"
+COMPOSE = docker compose --project-name "$$COMPOSE_PROJECT" --file "$$CONFIG_DIR/compose.yml"
+ifneq ($(strip $(VOLUME_ROOT)),)
+COMPOSE += --file "$$CONFIG_DIR/compose.volumes.yml"
+endif
 
-.PHONY: help create run clean data validate validate-run _create_backend stop
+.PHONY: help create copy run clean data validate validate-run _create_backend stop
 
 help:
 	@printf '%s\n' \
 	  'make -f Makefile.$(DATASET) create [BACKENDS=paradedb,pg_textsearch,postgres,elasticsearch]' \
 	  'make -f Makefile.$(DATASET) run WORKLOAD=topk QUERY_STYLE=disjunction BACKENDS=paradedb,postgres' \
+	  'make -f Makefile.$(DATASET) copy BACKENDS=paradedb TARGET_VOLUME_ROOT=/tin/benchmarker' \
 	  '' \
 	  'WORKLOAD=topk|count   QUERY_STYLE=conjunction|disjunction|phrase|mixed' \
 	  'pg_textsearch supports only WORKLOAD=topk QUERY_STYLE=disjunction.' \
 	  'BACKENDS accepts comma-separated names; order controls benchmark order.' \
 	  'VUS=8 DURATION=60s PREWARM=10s COOLDOWN=0s TOP_K=10 SEED=1592614637' \
+	  'UPDATES_PER_SECOND=0 sets the maximum paced update rate per active PostgreSQL backend.' \
+	  'With updates enabled, select BACKENDS=paradedb,pg_textsearch,postgres (or a subset).' \
 	  'QUERIES=<json-path> OUTPUT=live (or json, html, or a comma-separated combination) OUT_DIR=<directory>' \
 	  'CPUS=8 POSTGRES_SHM_SIZE=16g (Docker limits per backend)' \
 	  'MEMORY defaults to 64g for create, 32g otherwise; MEMORY=<limit> overrides either.' \
 	  'SHARED_BUFFERS=24GB MAINTENANCE_WORK_MEM=24GB (all PostgreSQL backends, every target)' \
 	  'MAX_PARALLEL_MAINTENANCE_WORKERS=8 (all PostgreSQL backends, every target)' \
+	  'MAX_PARALLEL_WORKERS=8 (total parallel worker limit per PostgreSQL backend, every target)' \
 	  'All PostgreSQL backends explicitly use max_parallel_workers_per_gather=2.' \
 	  'WORKERS=1 BATCH_SIZE=10000 control CSV bulk loading.' \
 	  'create resumes completed stages. RECREATE=1 explicitly reloads selected backends.' \
 	  'BUILD=0 reuses installed images. PROJECT=<name> selects an isolated set of volumes.' \
+	  'VOLUME_ROOT=<absolute-directory> stores database files under <root>/<project>/<backend>.' \
+	  'Leave VOLUME_ROOT unset for Docker default storage; use the same value for create/run/clean.' \
+	  'copy reads VOLUME_ROOT (default: Docker storage) and requires TARGET_VOLUME_ROOT.' \
+	  'copy preserves completed data/indexes; run the copy by setting VOLUME_ROOT to its target.' \
 	  'clean [BACKENDS=<names>] drops benchmark tables/indexes and clears their setup markers.' \
 	  'data decompresses data.csv.gz; stop stops this project without deleting data.' \
 	  'See benchmarks/README.md for data locations, ports, and recovery.'
@@ -96,7 +113,9 @@ validate:
 	  [[ -z "$${seen[$$backend]:-}" ]] || { echo "Duplicate backend: $$backend" >&2; exit 1; }
 	  seen[$$backend]=1
 	done
+	source "$$CONFIG_DIR/volumes.sh"
 	$(COMPOSE) config --quiet
+	check_volume_configuration
 
 validate-run: validate
 	@if [[ -t 1 ]]; then
@@ -104,9 +123,15 @@ validate-run: validate
 	fi
 	case "$$WORKLOAD" in topk|count) ;; *) echo 'WORKLOAD must be topk or count' >&2; exit 1;; esac
 	case "$$QUERY_STYLE" in conjunction|disjunction|phrase|mixed) ;; *) echo 'Invalid QUERY_STYLE' >&2; exit 1;; esac
+	[[ "$$UPDATES_PER_SECOND" =~ ^[0-9]{1,10}$$ ]] && (( 10#$$UPDATES_PER_SECOND <= 1000000000 )) || {
+	  echo 'UPDATES_PER_SECOND must be an integer between 0 and 1000000000' >&2; exit 1
+	}
 	for backend in $${BACKENDS//,/ }; do
 	  if [[ "$$backend" == pg_textsearch && "$$WORKLOAD:$$QUERY_STYLE" != topk:disjunction ]]; then
 	    echo 'pg_textsearch supports only WORKLOAD=topk QUERY_STYLE=disjunction' >&2; exit 1
+	  fi
+	  if [[ "$$backend" == elasticsearch ]] && (( 10#$$UPDATES_PER_SECOND > 0 )); then
+	    echo 'elasticsearch does not support paced random updates; select PostgreSQL backends or use UPDATES_PER_SECOND=0' >&2; exit 1
 	  fi
 	done
 	[[ "$$VUS" =~ ^[1-9][0-9]*$$ && "$$TOP_K" =~ ^[1-9][0-9]*$$ ]] || { echo 'VUS and TOP_K must be positive integers' >&2; exit 1; }
@@ -139,10 +164,14 @@ $(K6):
 	+$(MAKE) --no-print-directory -C "$(REPO_ROOT)" k6
 
 create: validate data $(LOADER)
-	@mkdir -p "$$STATE_DIR/logs"
+	@source "$$CONFIG_DIR/volumes.sh"
+	mkdir -p "$$STORAGE_STATE_DIR/logs"
 	exec 9>"$$STATE_DIR/lock"
 	flock -n 9 || { echo "Another create/run is using $$PROJECT" >&2; exit 1; }
+	check_volume_configuration
+	prepare_volume_directories
 	backends=($${BACKENDS//,/ })
+	stop_other_storage_containers "$${backends[@]}"
 	if [[ "$$BUILD" == 1 ]]; then
 	  for backend in "$${backends[@]}"; do
 	    case "$$backend" in paradedb|pg_textsearch) $(COMPOSE) build "$$backend";; esac
@@ -152,17 +181,36 @@ create: validate data $(LOADER)
 	for backend in "$${backends[@]}"; do
 	  $(MAKE) --no-print-directory -f "$$THIS_MAKEFILE" _create_backend BACKEND="$$backend"
 	done
-	echo "Creation complete. Logs and stage records: $$STATE_DIR"
+	echo "Creation complete. Logs and stage records: $$STORAGE_STATE_DIR"
+
+copy: validate
+	@source "$$CONFIG_DIR/volumes.sh"
+	[[ -n "$$TARGET_VOLUME_ROOT" ]] || { echo 'copy requires TARGET_VOLUME_ROOT=<absolute-directory>' >&2; exit 1; }
+	command -v python3 >/dev/null || { echo 'Missing dependency: python3 (needed for copy)' >&2; exit 1; }
+	TARGET_VOLUME_ROOT=$$(normalize_volume_root TARGET_VOLUME_ROOT "$$TARGET_VOLUME_ROOT")
+	[[ "$$TARGET_VOLUME_ROOT" != "$$VOLUME_ROOT" ]] || { echo 'Source and target VOLUME_ROOT must differ' >&2; exit 1; }
+	export TARGET_VOLUME_ROOT
+	export TARGET_COMPOSE_PROJECT=$$(storage_project "$$TARGET_VOLUME_ROOT")
+	export TARGET_STATE_DIR=$$(storage_state_dir "$$TARGET_VOLUME_ROOT")
+	mkdir -p "$$STATE_DIR/logs"
+	exec 9>"$$STATE_DIR/lock"
+	flock -n 9 || { echo "Another create/copy/run/clean is using $$PROJECT" >&2; exit 1; }
+	check_volume_configuration
+	log="$$STATE_DIR/logs/$$(date -u +%Y%m%dT%H%M%S)-copy-$$$$.log"
+	echo "Copy log: $$log"
+	python3 "$$CONFIG_DIR/copy_volumes.py" 2>&1 | tee "$$log"
 
 _create_backend:
-	@backend='$(BACKEND)'
+	@source "$$CONFIG_DIR/volumes.sh"
+	backend='$(BACKEND)'
 	case "$$backend" in paradedb|pg_textsearch|postgres|elasticsearch) ;; *) exit 1;; esac
-	state="$$STATE_DIR/$$backend"
+	check_volume_configuration
+	state="$$STORAGE_STATE_DIR/$$backend"
 	data_hash=$$(awk '$$2 == "data.csv" {print $$1}' "$$CHECKSUMS")
 	test -n "$$data_hash"
 	load_hash=$$({ printf '%s\n' "$$data_hash"; cat "$$DATASET_DIR/schema.yaml" "$$CONFIG_DIR/$$backend"/pre.*; } | sha256sum); load_hash=$${load_hash%% *}
 	done_hash=$$({ printf '%s\n' "$$load_hash"; cat "$$CONFIG_DIR/$$backend"/post.*; } | sha256sum); done_hash=$${done_hash%% *}
-	if ! docker volume inspect "$${PROJECT}_$${backend}_data" >/dev/null 2>&1 || [[ "$$RECREATE" == 1 ]]; then
+	if ! docker volume inspect "$${COMPOSE_PROJECT}_$${backend}_data" >/dev/null 2>&1 || [[ "$$RECREATE" == 1 ]]; then
 	  rm -f "$$state.loaded" "$$state.done"
 	fi
 	if [[ -f "$$state.done" ]]; then
@@ -173,14 +221,20 @@ _create_backend:
 	if [[ -f "$$state.loaded" && "$$(cat "$$state.loaded")" != "$$load_hash" ]]; then
 	  echo "$$backend input/schema changed; use RECREATE=1 to reload" >&2; exit 1
 	fi
-	log="$$STATE_DIR/logs/$$(date -u +%Y%m%dT%H%M%S)-$$backend.log"
+	log="$$STORAGE_STATE_DIR/logs/$$(date -u +%Y%m%dT%H%M%S)-$$backend.log"
 	{
 	  trap '$(COMPOSE) stop "$$backend"' EXIT
 	  trap 'exit 130' INT
 	  trap 'exit 143' TERM
 	  echo "$$backend: starting (log: $$log)"
+	  prepare_volume_directories
+	  if [[ -n "$$VOLUME_ROOT" && "$$backend" == elasticsearch ]]; then
+	    # Elasticsearch runs as UID 1000 and does not initialize bind-directory ownership.
+	    $(COMPOSE) run --rm --no-deps --user 0 --entrypoint /bin/sh elasticsearch \
+	      -c 'chown 1000:0 /usr/share/elasticsearch/data'
+	  fi
 	  $(COMPOSE) up -d --wait --wait-timeout 300 --no-build "$$backend"
-	  load_dir="$$STATE_DIR/$$backend-load"
+	  load_dir="$$STORAGE_STATE_DIR/$$backend-load"
 	  mkdir -p "$$load_dir/$$backend"
 	  ln -sfn "$$DATASET_DIR/schema.yaml" "$$load_dir/schema.yaml"
 	  ln -sfn "$$DATA_CSV" "$$load_dir/data.csv"
@@ -210,21 +264,24 @@ _create_backend:
 	} 2>&1 | tee "$$log"
 
 run: validate-run $(K6)
-	@mkdir -p "$$STATE_DIR" "$$OUT_DIR"
+	@source "$$CONFIG_DIR/volumes.sh"
+	mkdir -p "$$STORAGE_STATE_DIR" "$$OUT_DIR"
 	exec 9>"$$STATE_DIR/lock"
 	flock -n 9 || { echo "Another create/run is using $$PROJECT" >&2; exit 1; }
+	check_volume_configuration
 	backends=($${BACKENDS//,/ })
 	for backend in "$${backends[@]}"; do
-	  test -f "$$STATE_DIR/$$backend.done" || { echo "$$backend has not been created; run the create target first" >&2; exit 1; }
-	  docker volume inspect "$${PROJECT}_$${backend}_data" >/dev/null || { echo "$$backend volume is missing; run create again" >&2; exit 1; }
+	  test -f "$$STORAGE_STATE_DIR/$$backend.done" || { echo "$$backend has not been created or copied at this VOLUME_ROOT" >&2; exit 1; }
+	  docker volume inspect "$${COMPOSE_PROJECT}_$${backend}_data" >/dev/null || { echo "$$backend volume is missing; run create or copy first" >&2; exit 1; }
 	done
+	stop_other_storage_containers "$${backends[@]}"
 	trap '$(COMPOSE) stop "$${backends[@]}"' EXIT
 	trap 'exit 130' INT
 	trap 'exit 143' TERM
 	$(COMPOSE) up -d --wait --wait-timeout 300 --no-build "$${backends[@]}"
 	export BENCHMARK_QUERY_SET="$$DATASET" BENCHMARK_WORKLOAD="$$WORKLOAD" BENCHMARK_QUERY_STYLE="$$QUERY_STYLE"
 	export DASHBOARD_EXPORT_DIR="$$OUT_DIR" DASHBOARD_EXPORT_PREFIX="$$(date -u +%Y%m%dT%H%M%S)-$$WORKLOAD-$$QUERY_STYLE"
-	echo "Running $$DATASET: $$WORKLOAD / $$QUERY_STYLE; backends=$$BACKENDS; vus=$$VUS; duration=$$DURATION per backend"
+	echo "Running $$DATASET: $$WORKLOAD / $$QUERY_STYLE; backends=$$BACKENDS; vus=$$VUS; duration=$$DURATION per backend; updates_per_second=$$UPDATES_PER_SECOND"
 	if [[ -t 1 ]]; then
 	  # Keep a terminal attached to k6 so progress bars can update in place.
 	  printf -v command '%q ' "$$K6" run --out "dashboard=$$OUTPUT" "$$CONFIG_DIR/search.js"
@@ -234,18 +291,21 @@ run: validate-run $(K6)
 	fi
 
 clean: validate
-	@mkdir -p "$$STATE_DIR/logs"
+	@source "$$CONFIG_DIR/volumes.sh"
+	mkdir -p "$$STORAGE_STATE_DIR/logs"
 	exec 9>"$$STATE_DIR/lock"
 	flock -n 9 || { echo "Another create/run/clean is using $$PROJECT" >&2; exit 1; }
+	check_volume_configuration
 	for backend in $${BACKENDS//,/ }; do
-	  state="$$STATE_DIR/$$backend"
-	  volume=$$(docker volume ls --filter "name=^$${PROJECT}_$${backend}_data$$" --format '{{.Name}}')
+	  state="$$STORAGE_STATE_DIR/$$backend"
+	  volume=$$(docker volume ls --filter "name=^$${COMPOSE_PROJECT}_$${backend}_data$$" --format '{{.Name}}')
 	  if [[ -z "$$volume" ]]; then
 	    rm -f "$$state.loaded" "$$state.done"
 	    echo "$$backend: no data volume; setup markers cleared"
 	    continue
 	  fi
-	  log="$$STATE_DIR/logs/$$(date -u +%Y%m%dT%H%M%S)-$$backend-clean.log"
+	  stop_other_storage_containers "$$backend"
+	  log="$$STORAGE_STATE_DIR/logs/$$(date -u +%Y%m%dT%H%M%S)-$$backend-clean.log"
 	  (
 	    trap '$(COMPOSE) stop "$$backend"' EXIT
 	    trap 'exit 130' INT
@@ -270,4 +330,5 @@ clean: validate
 	done
 
 stop:
-	@$(COMPOSE) stop
+	@source "$$CONFIG_DIR/volumes.sh"
+	$(COMPOSE) stop

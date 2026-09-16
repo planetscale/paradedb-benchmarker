@@ -1,4 +1,6 @@
 x-postgres: &postgres
+  labels:
+    io.benchmarker.project: ${PROJECT}
   environment:
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: postgres
@@ -16,6 +18,8 @@ x-postgres: &postgres
       "-c",
       "max_parallel_maintenance_workers=${MAX_PARALLEL_MAINTENANCE_WORKERS:-8}",
       "-c",
+      "max_parallel_workers=${MAX_PARALLEL_WORKERS:-8}",
+      "-c",
       "max_parallel_workers_per_gather=2",
     ]
   stop_grace_period: 10m
@@ -31,7 +35,7 @@ services:
     image: benchmarker-paradedb:pg18.6
     build:
       context: ../docker/paradedb
-    container_name: ${PROJECT}-paradedb
+    container_name: ${COMPOSE_PROJECT:-${PROJECT}}-paradedb
     command:
       [
         "postgres",
@@ -41,6 +45,8 @@ services:
         "maintenance_work_mem=${MAINTENANCE_WORK_MEM:-24GB}",
         "-c",
         "max_parallel_maintenance_workers=${MAX_PARALLEL_MAINTENANCE_WORKERS:-8}",
+        "-c",
+        "max_parallel_workers=${MAX_PARALLEL_WORKERS:-8}",
         "-c",
         "max_parallel_workers_per_gather=2",
         "-c",
@@ -55,7 +61,7 @@ services:
     image: benchmarker-pg-textsearch:pg18.6
     build:
       context: ../docker/pg_textsearch
-    container_name: ${PROJECT}-pg_textsearch
+    container_name: ${COMPOSE_PROJECT:-${PROJECT}}-pg_textsearch
     command:
       [
         "postgres",
@@ -65,6 +71,8 @@ services:
         "maintenance_work_mem=${MAINTENANCE_WORK_MEM:-24GB}",
         "-c",
         "max_parallel_maintenance_workers=${MAX_PARALLEL_MAINTENANCE_WORKERS:-8}",
+        "-c",
+        "max_parallel_workers=${MAX_PARALLEL_WORKERS:-8}",
         "-c",
         "max_parallel_workers_per_gather=2",
         "-c",
@@ -77,14 +85,16 @@ services:
   postgres:
     <<: *postgres
     image: postgres:18.6-bookworm
-    container_name: ${PROJECT}-postgres
+    container_name: ${COMPOSE_PROJECT:-${PROJECT}}-postgres
     ports: ["127.0.0.1:${POSTGRES_PORT}:5432"]
     volumes:
       - postgres_data:/var/lib/postgresql/docker
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
-    container_name: ${PROJECT}-elasticsearch
+    container_name: ${COMPOSE_PROJECT:-${PROJECT}}-elasticsearch
+    labels:
+      io.benchmarker.project: ${PROJECT}
     cpus: ${CPUS:-8}
     mem_limit: ${MEMORY:-32g}
     environment:
