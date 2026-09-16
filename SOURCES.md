@@ -81,11 +81,19 @@ The archive URL and the prepared CSV's scope are recorded in
 
 ## Prepared files and checksums
 
-Each dataset's `data.csv.gz` uses gzip level 9 with the original filename and
-timestamp omitted. `make -f Makefile.wikipedia create` and
-`make -f Makefile.stackexchange create` decompress the supplied prepared
-archive and verify the resulting CSV against `SHA256SUMS`. These prepared
-archives and CSVs are excluded from Git.
+Each dataset's gzip level 9 stream, with the original filename and timestamp
+omitted, is split into consecutive files named `data.csv.gz.part0000`,
+`data.csv.gz.part0001`, and so on. Every part is exactly 2,000,000,000 bytes
+(2 GB), except for the final part. Wikipedia has two parts; Stack Exchange
+has fifteen. The parts use Git LFS; unsplit archives and decompressed CSVs
+are excluded from Git.
+
+`make -f Makefile.wikipedia create` and `make -f Makefile.stackexchange create`
+concatenate the parts directly into gzip without assembling an intermediate
+archive, then verify the resulting CSV against `SHA256SUMS`. Each manifest
+records individual part sizes and SHA-256 checksums, along with the complete
+compressed stream's original size and SHA-256. `SHA256SUMS` lists the parts
+and the CSV.
 
 | Dataset directory | CSV bytes | Gzip bytes | File identities |
 | --- | ---: | ---: | --- |

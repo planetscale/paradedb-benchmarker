@@ -14,6 +14,9 @@ VOLUME_ROOT ?=
 TARGET_VOLUME_ROOT ?=
 STATE_DIR ?= $(CONFIG_DIR)/.state/$(PROJECT)
 DATA_GZ ?= $(DATASET_DIR)/data.csv.gz
+# Split archives take precedence; accept a single gzip for local fixtures too.
+DATA_GZ_PARTS := $(sort $(wildcard $(DATA_GZ).part[0-9][0-9][0-9][0-9]))
+DATA_GZ_INPUTS := $(if $(DATA_GZ_PARTS),$(DATA_GZ_PARTS),$(DATA_GZ))
 DATA_CSV ?= $(DATASET_DIR)/data.csv
 CHECKSUMS ?= $(DATASET_DIR)/SHA256SUMS
 QUERIES ?= $(DATASET_DIR)/queries.json
@@ -96,7 +99,9 @@ help:
 	  'copy reads VOLUME_ROOT (default: Docker storage) and requires TARGET_VOLUME_ROOT.' \
 	  'copy preserves completed data/indexes; run the copy by setting VOLUME_ROOT to its target.' \
 	  'clean [BACKENDS=<names>] drops benchmark tables/indexes and clears their setup markers.' \
-	  'data decompresses data.csv.gz; stop stops this project without deleting data.' \
+	  'data streams data.csv.gz.part0000, part0001, ... through gzip into data.csv.' \
+	  'DATA_GZ=<archive-prefix> also accepts a single gzip file for local fixtures.' \
+	  'stop stops this project without deleting data.' \
 	  'See benchmarks/README.md for data locations, ports, and recovery.'
 
 validate:
@@ -144,14 +149,25 @@ validate-run: validate
 
 data: $(DATA_CSV)
 
-$(DATA_CSV): $(DATA_GZ) $(CHECKSUMS)
+$(DATA_CSV): $(DATA_GZ_INPUTS) $(CHECKSUMS)
 	@mkdir -p "$$(dirname "$$DATA_CSV")"
 	partial="$$DATA_CSV.partial.$$$$"
 	trap 'rm -f "$$partial"' EXIT
-	echo "Decompressing $$DATA_GZ to $$DATA_CSV"
-	gzip -dc -- "$$DATA_GZ" > "$$partial"
 	expected=$$(awk '$$2 == "data.csv" { print $$1 }' "$$CHECKSUMS")
 	test -n "$$expected" || { echo 'Missing data.csv checksum' >&2; exit 1; }
+	shopt -s nullglob
+	parts=("$$DATA_GZ".part[0-9][0-9][0-9][0-9])
+	if (($${#parts[@]})); then
+	  for index in "$${!parts[@]}"; do
+	    printf -v expected_part '%s.part%04d' "$$DATA_GZ" "$$index"
+	    [[ "$${parts[$$index]}" == "$$expected_part" ]] || { echo "Missing archive part: $$expected_part" >&2; exit 1; }
+	  done
+	  echo "Decompressing $${#parts[@]} parts of $$DATA_GZ to $$DATA_CSV"
+	  cat -- "$${parts[@]}" | gzip -dc > "$$partial"
+	else
+	  echo "Decompressing $$DATA_GZ to $$DATA_CSV"
+	  gzip -dc -- "$$DATA_GZ" > "$$partial"
+	fi
 	actual=$$(sha256sum "$$partial"); actual=$${actual%% *}
 	[[ "$$actual" == "$$expected" ]] || { echo 'CSV checksum mismatch' >&2; exit 1; }
 	mv -- "$$partial" "$$DATA_CSV"

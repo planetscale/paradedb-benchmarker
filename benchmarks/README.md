@@ -10,19 +10,31 @@ licensing references, and checksums.
 
 ## Create the databases
 
-Place the dataset's `data.csv.gz` in `datasets/wikipedia/` or
-`datasets/stackexchange/`. Compressed and decompressed CSVs are excluded from
-Git; the corresponding `data-manifest.json`, `SHA256SUMS`, and `source.json`
-describe the files. These are gzip level 9 archives of the existing source
-CSVs, with filename and timestamp headers omitted.
+Each dataset's compressed CSV is stored as Git LFS files named
+`data.csv.gz.part0000`, `data.csv.gz.part0001`, and so on, in
+`datasets/wikipedia/` or `datasets/stackexchange/`. Each part is exactly
+2,000,000,000 bytes (2 GB), except for the smaller final part. Wikipedia has
+two parts; Stack Exchange has fifteen. Use `git lfs pull` to retrieve the
+parts if your checkout contains only LFS pointers.
+
+The parts preserve the original gzip level 9 stream, with filename and timestamp
+headers omitted. They are consecutive byte ranges, not independent gzip files.
+`data-manifest.json` records each part's size and SHA-256 plus the complete
+compressed stream's size and SHA-256. `SHA256SUMS` lists the parts and the
+decompressed CSV; `source.json` describes the source data. Unsplit archives and
+decompressed CSVs are excluded from Git.
 
 ```bash
 make -f Makefile.wikipedia create
 make -f Makefile.stackexchange create BACKENDS=paradedb,postgres,elasticsearch
 ```
 
-`create` decompresses the CSV and verifies its SHA-256 checksum. It builds the
-extension images, then loads and indexes the selected backends one at a time.
+`create` concatenates the numbered parts directly into gzip, writes `data.csv`,
+and verifies the CSV's SHA-256 checksum. It does not assemble an intermediate
+`.gz` file. Missing or corrupt parts fail without publishing a partial CSV.
+The `data` target performs just this decompression and verification step.
+After decompression, `create` builds the extension images, then loads and indexes
+the selected backends one at a time.
 Each backend gets its own database volume and an independent import. The
 existing loader parses CSV records, including embedded newlines, and uses
 PostgreSQL binary COPY or Elasticsearch bulk requests. PostgreSQL's generated
@@ -272,7 +284,9 @@ Python 3.9 or newer and uses the locally installed backend images. Node.js is
 used only by the JavaScript unit tests. No npm dependencies are needed.
 
 For local fixtures or externally stored data, `DATA_GZ`, `DATA_CSV`, and
-`CHECKSUMS` can override the default file paths. `CHECKSUMS` must contain a
+`CHECKSUMS` can override the default file paths. `DATA_GZ` is the archive prefix
+before `.part0000`; it also accepts a single gzip file when no parts exist.
+`CHECKSUMS` must contain a
 `data.csv` SHA-256 entry matching that CSV. `STATE_DIR` can also be overridden;
 custom storage keeps its records in `STATE_DIR/volumes/<root-id>/`.
 Use absolute paths for overrides. `MEMORY` and `CPUS` control Docker limits;
@@ -283,4 +297,5 @@ maintenance allocations independently.
 make -f Makefile.wikipedia help
 make -f Makefile.wikipedia stop
 node --test benchmarks/queries.test.js
+python3 -B -m unittest discover -s benchmarks -p 'data_test.py'
 ```
