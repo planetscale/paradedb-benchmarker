@@ -15,8 +15,8 @@ backends without adding work to the timed query path.
 - On the dedicated collector VU, query `pg_statio_user_indexes` once per second
   through that VU's PostgreSQL connection. Workload VUs use different driver
   instances and connections.
-- Restrict the aggregate to each backend's search access method: `bm25` for
-  ParadeDB and pg_textsearch, and `gin` for `postgres`. Elasticsearch does not
+- Restrict the aggregate to each backend's search access method: `paradedb` for
+  ParadeDB, `bm25` for pg_textsearch, and `gin` for `postgres`. Elasticsearch does not
   participate.
 - Keep `idx_blks_read` and `idx_blks_hit` separate. Convert both to bytes using
   `block_size`, and return their display values from SQL with
