@@ -19,8 +19,10 @@ var (
 	ingestDocs      *metrics.Metric
 	updateDuration  *metrics.Metric
 	updateDocs      *metrics.Metric
+	updateErrors    *metrics.Metric
 	backendInit     *metrics.Metric
 	scenarioStarted *metrics.Metric
+	prewarmProgress *metrics.Metric
 	metricsRegOnce  sync.Once
 
 	// Query patterns per backend/chart/scenario (captured on first call)
@@ -81,13 +83,19 @@ func RegisterMetrics(vu modules.VU) {
 		ingestDocs, _ = registry.NewMetric("ingest_docs", metrics.Counter)
 		updateDuration, _ = registry.NewMetric("update_duration", metrics.Trend, metrics.Time)
 		updateDocs, _ = registry.NewMetric("update_docs", metrics.Counter)
+		updateErrors, _ = registry.NewMetric("update_errors", metrics.Counter)
 		backendInit, _ = registry.NewMetric("backend_init", metrics.Gauge)
 		scenarioStarted, _ = registry.NewMetric("scenario_started", metrics.Gauge)
+		prewarmProgress, _ = registry.NewMetric("prewarm_progress", metrics.Gauge)
 	})
 }
 
 // emitGaugeMetric is a shared helper for emitting gauge metrics with backend tags.
 func emitGaugeMetric(vu modules.VU, metric *metrics.Metric, backend string) {
+	emitGaugeMetricValue(vu, metric, backend, 1)
+}
+
+func emitGaugeMetricValue(vu modules.VU, metric *metrics.Metric, backend string, value float64) {
 	state := vu.State()
 	if state == nil || metric == nil {
 		return
@@ -106,7 +114,7 @@ func emitGaugeMetric(vu modules.VU, metric *metrics.Metric, backend string) {
 	metrics.PushIfNotDone(ctxPtr, state.Samples, metrics.Sample{
 		TimeSeries: metrics.TimeSeries{Metric: metric, Tags: tags},
 		Time:       time.Now(),
-		Value:      1,
+		Value:      value,
 	})
 }
 
@@ -120,6 +128,11 @@ func EmitBackendInit(vu modules.VU, backend string) {
 // This creates the run entry in the dashboard before any queries complete.
 func EmitScenarioStarted(vu modules.VU, backend string) {
 	emitGaugeMetric(vu, scenarioStarted, backend)
+}
+
+// EmitPrewarmProgress reports an unmeasured backend warm-up percentage.
+func EmitPrewarmProgress(vu modules.VU, backend string, percent float64) {
+	emitGaugeMetricValue(vu, prewarmProgress, backend, percent)
 }
 
 func storeQueryPattern(backend, chart, scenario, query string) {
@@ -357,12 +370,8 @@ type UpdateResult struct {
 
 // Emit pushes update metrics to k6 with the backend tag.
 func (r *UpdateResult) Emit(ctx context.Context, vu modules.VU, backend string) {
-	if r.Error != "" {
-		return
-	}
-
 	state := vu.State()
-	if state == nil || updateDuration == nil || updateDocs == nil {
+	if state == nil {
 		return
 	}
 
@@ -371,12 +380,26 @@ func (r *UpdateResult) Emit(ctx context.Context, vu modules.VU, backend string) 
 	if backend != "" {
 		tags = tags.With("backend", backend)
 	}
-
-	metrics.PushIfNotDone(ctx, state.Samples, metrics.Sample{
-		TimeSeries: metrics.TimeSeries{Metric: updateDuration, Tags: tags},
-		Time:       now,
-		Value:      r.LatencyMs,
-	})
+	if updateDuration != nil {
+		metrics.PushIfNotDone(ctx, state.Samples, metrics.Sample{
+			TimeSeries: metrics.TimeSeries{Metric: updateDuration, Tags: tags},
+			Time:       now,
+			Value:      r.LatencyMs,
+		})
+	}
+	if r.Error != "" {
+		if updateErrors != nil {
+			metrics.PushIfNotDone(ctx, state.Samples, metrics.Sample{
+				TimeSeries: metrics.TimeSeries{Metric: updateErrors, Tags: tags},
+				Time:       now,
+				Value:      1,
+			})
+		}
+		return
+	}
+	if updateDocs == nil {
+		return
+	}
 	metrics.PushIfNotDone(ctx, state.Samples, metrics.Sample{
 		TimeSeries: metrics.TimeSeries{Metric: updateDocs, Tags: tags},
 		Time:       now,

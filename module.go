@@ -2,6 +2,8 @@
 package search
 
 import (
+	"sync"
+
 	_ "github.com/paradedb/benchmarker/dashboard"
 	"github.com/paradedb/benchmarker/loader"
 	"github.com/paradedb/benchmarker/metrics"
@@ -13,18 +15,23 @@ func init() {
 }
 
 // RootModule is the global module instance that will create client instances for each VU.
-type RootModule struct{}
+type RootModule struct {
+	phaseMu sync.Mutex
+	phases  *phaseState
+}
 
 // NewModuleInstance creates a new instance of the module for each VU.
-func (*RootModule) NewModuleInstance(vu modules.VU) modules.Instance {
+func (r *RootModule) NewModuleInstance(vu modules.VU) modules.Instance {
 	return &ModuleInstance{
-		vu: vu,
+		root: r,
+		vu:   vu,
 	}
 }
 
 // ModuleInstance represents an instance of the module for a single VU.
 type ModuleInstance struct {
-	vu modules.VU
+	root *RootModule
+	vu   modules.VU
 }
 
 // Exports returns the exports of the module.
@@ -33,6 +40,7 @@ func (m *ModuleInstance) Exports() modules.Exports {
 		Named: map[string]interface{}{
 			"backends": m.newBackends,
 			"metrics":  m.newMetrics,
+			"phases":   m.newPhases,
 			"loader":   m.newLoader,
 			"timer":    m.newTimer,
 			"terms":    m.newTerms,

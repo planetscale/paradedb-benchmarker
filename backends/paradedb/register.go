@@ -24,6 +24,7 @@ func New(connString string) (backends.Driver, error) {
 	}
 
 	pgDriver := driver.(*postgres.Driver)
+	pgDriver.SetIndexIOStatsAccessMethods("paradedb")
 
 	// Capture every paradedb.* GUC rather than a hardcoded list, so new or
 	// renamed GUCs show up without code changes

@@ -31,7 +31,10 @@ datasets/sample/
     └── search_terms.json    # Query terms for benchmarks
 ```
 
-Each backend subdirectory contains pre/post scripts that the loader runs before and after data loading. SQL backends (ParadeDB, PostgreSQL, ClickHouse) use `.sql` files, HTTP backends (Elasticsearch, OpenSearch, MongoDB) use `.json`. You only need directories for the backends you're testing.
+Each backend subdirectory contains pre/post scripts that the loader runs before and after data loading. SQL backends (ParadeDB, pg_textsearch, PostgreSQL, ClickHouse) use `.sql` files, HTTP backends (Elasticsearch, OpenSearch, MongoDB) use `.json`. You only need directories for the backends you're testing.
+
+To use an additional backend such as pg_textsearch, supply its pre/post scripts
+in your dataset's `pg_textsearch/` directory.
 
 The `k6/` directory holds your benchmark scripts and any supporting data like search terms.
 
@@ -49,7 +52,7 @@ columns:
 
 Pre and post scripts are defined per dataset in the dataset directory (e.g., `datasets/sample/paradedb/pre.sql`). They run during data loading to set up and optimize each backend.
 
-### SQL Backends (ParadeDB, PostgreSQL, ClickHouse)
+### SQL Backends (ParadeDB, pg_textsearch, PostgreSQL, ClickHouse)
 
 Pre and post scripts are standard SQL executed directly:
 

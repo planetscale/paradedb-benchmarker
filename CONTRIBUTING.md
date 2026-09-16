@@ -59,10 +59,11 @@ benchmarks/
 ├── backends/
 │   ├── driver.go          # Driver interface, registry, K6Client wrapper
 │   ├── shared/
-│   │   ├── postgres/      # Shared PostgreSQL driver (paradedb, postgres)
+│   │   ├── postgres/      # Shared PostgreSQL driver (paradedb, postgres, pg_textsearch)
 │   │   └── elastic/       # Shared Elasticsearch/OpenSearch driver
 │   ├── paradedb/          # ParadeDB registration
 │   ├── postgres/          # PostgreSQL registration
+│   ├── pg_textsearch/     # pg_textsearch registration
 │   ├── elasticsearch/     # Elasticsearch registration
 │   ├── opensearch/        # OpenSearch registration
 │   ├── clickhouse/        # ClickHouse driver

@@ -47,6 +47,48 @@ func TestNewRejectsUnknownMode(t *testing.T) {
 	}
 }
 
+func TestDashboardExportPrefixDefaultsToDashboard(t *testing.T) {
+	t.Setenv("DASHBOARD_EXPORT_PREFIX", "")
+	prefix, err := dashboardExportPrefix()
+	if err != nil {
+		t.Fatalf("dashboardExportPrefix: %v", err)
+	}
+	if prefix != "dashboard" {
+		t.Fatalf("dashboardExportPrefix = %q, want dashboard", prefix)
+	}
+}
+
+func TestNewRejectsUnsafeExportPrefix(t *testing.T) {
+	t.Setenv("DASHBOARD_EXPORT_PREFIX", "../results")
+	if _, err := New(output.Params{ConfigArgument: "json"}); err == nil {
+		t.Fatalf("expected error for unsafe export prefix, got nil")
+	}
+}
+
+func TestNewCreatesExportDirectory(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "nested", "exports")
+	t.Setenv("DASHBOARD_EXPORT_DIR", dir)
+
+	if _, err := New(output.Params{ConfigArgument: "json"}); err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	if info, err := os.Stat(dir); err != nil || !info.IsDir() {
+		t.Fatalf("export directory = %#v, %v; want directory", info, err)
+	}
+}
+
+func TestNewRejectsUnusableExportDirectory(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "file")
+	if err := os.WriteFile(file, []byte("not a directory"), 0o644); err != nil {
+		t.Fatalf("write file: %v", err)
+	}
+	t.Setenv("DASHBOARD_EXPORT_DIR", filepath.Join(file, "exports"))
+
+	if _, err := New(output.Params{ConfigArgument: "json"}); err == nil {
+		t.Fatal("expected unusable export directory error")
+	}
+}
+
 // TestStartStopWritesRequestedExportFiles drives the full Start/Stop lifecycle
 // through New() so we exercise the same code path k6 does, minus the http
 // server (live mode disabled so no port binding).
@@ -62,15 +104,9 @@ func TestStartStopWritesRequestedExportFiles(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.arg, func(t *testing.T) {
-			dir := t.TempDir()
-			cwd, err := os.Getwd()
-			if err != nil {
-				t.Fatalf("getwd: %v", err)
-			}
-			if err := os.Chdir(dir); err != nil {
-				t.Fatalf("chdir: %v", err)
-			}
-			t.Cleanup(func() { _ = os.Chdir(cwd) })
+			dir := filepath.Join(t.TempDir(), "out")
+			t.Setenv("DASHBOARD_EXPORT_DIR", dir)
+			t.Setenv("DASHBOARD_EXPORT_PREFIX", "count_2-terms")
 
 			out, err := New(output.Params{ConfigArgument: c.arg})
 			if err != nil {
@@ -90,7 +126,7 @@ func TestStartStopWritesRequestedExportFiles(t *testing.T) {
 			}
 			for _, e := range entries {
 				name := e.Name()
-				if !strings.HasPrefix(name, "dashboard_") {
+				if !strings.HasPrefix(name, "count_2-terms_") {
 					continue
 				}
 				if strings.HasSuffix(name, ".json") {

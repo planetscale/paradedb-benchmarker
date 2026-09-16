@@ -1,5 +1,7 @@
 # Data files
 dashboard*.json
+dashboard*.html
+/out/
 
 # Datasets - only include sample (everything in it)
 datasets/*

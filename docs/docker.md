@@ -41,7 +41,7 @@ Start backends individually or all at once using Docker Compose profiles:
 docker compose --profile paradedb up -d
 
 # Or multiple backends
-docker compose --profile paradedb --profile elasticsearch up -d
+docker compose --profile paradedb --profile pg_textsearch up -d
 
 # Or all of them
 docker compose --profile all up -d
@@ -52,11 +52,22 @@ docker compose --profile all up -d
 | Service       | Profile         | Port(s)    |
 | ------------- | --------------- | ---------- |
 | paradedb      | `paradedb`      | 5432       |
+| pg_textsearch | `pg_textsearch` | 5435       |
 | postgres      | `postgres`      | 5433       |
 | elasticsearch | `elasticsearch` | 9200       |
 | opensearch    | `opensearch`    | 9201, 9600 |
 | clickhouse    | `clickhouse`    | 9000, 8123 |
 | mongodb       | `mongodb`       | 27017      |
+
+`POSTGRES_SHM_SIZE` sets `/dev/shm` capacity for the PostgreSQL services and
+defaults to `16g`.
+
+Run `make postgres-images` to build the ParadeDB and pg_textsearch images on
+the pinned PostgreSQL release before starting those services.
+
+The root Compose file leaves PostgreSQL tuning settings at their defaults.
+Its only PostgreSQL GUC override is `shared_preload_libraries`, used to load
+the extensions required by each backend.
 
 ## TLS
 

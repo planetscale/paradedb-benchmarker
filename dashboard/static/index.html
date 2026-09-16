@@ -146,6 +146,34 @@
         flex-direction: column;
         gap: 8px;
       }
+      .prewarm-status {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--border);
+      }
+      .prewarm-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+        color: var(--text-dim);
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+      .prewarm-track {
+        height: 6px;
+        overflow: hidden;
+        background: var(--border);
+        border-radius: 3px;
+      }
+      .prewarm-fill {
+        height: 100%;
+        width: 0;
+        background: var(--c1);
+        border-radius: inherit;
+        transition: width 0.2s ease;
+      }
       .query-item {
         background: var(--bg);
         border-radius: 4px;
@@ -348,18 +376,26 @@
       }
       .query-stats {
         display: grid;
-        grid-template-columns: repeat(6, 1fr);
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(max-content, 1fr);
         gap: 6px;
       }
       .query-stat-value {
         font-size: 11px;
         font-weight: 600;
         font-variant-numeric: tabular-nums;
+        white-space: nowrap;
       }
       .query-stat-label {
         font-size: 8px;
         color: var(--text-dim);
         text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .query-stat-update-start {
+        border-left: 1px solid var(--border);
+        margin-left: 2px;
+        padding-left: 8px;
       }
       .chart-container {
         background: var(--panel);
@@ -456,7 +492,7 @@
       }
       .main-row {
         display: grid;
-        grid-template-columns: 1fr 340px;
+        grid-template-columns: minmax(0, 1fr) minmax(390px, max-content);
         gap: 16px;
         margin-bottom: 16px;
       }
@@ -477,15 +513,17 @@
 
       @media (max-width: 1200px) {
         .main-row {
-          grid-template-columns: 1fr 300px;
+          grid-template-columns: 1fr 350px;
         }
         .query-stats {
-          grid-template-columns: repeat(3, 1fr);
+          grid-auto-flow: row;
+          grid-auto-columns: auto;
+          grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
         }
       }
       @media (max-width: 1000px) {
         .main-row {
-          grid-template-columns: 1fr 260px;
+          grid-template-columns: 1fr 310px;
           gap: 12px;
         }
         body {
@@ -513,9 +551,6 @@
           flex: 1;
           min-width: 280px;
         }
-        .query-stats {
-          grid-template-columns: repeat(6, 1fr);
-        }
       }
       @media (max-width: 700px) {
         .two-charts {
@@ -536,9 +571,6 @@
         .stats-column .stat-group {
           min-width: 100%;
         }
-        .query-stats {
-          grid-template-columns: repeat(3, 1fr);
-        }
       }
       #runs-container {
         display: contents;
@@ -549,6 +581,7 @@
     <div class="header">
       <h1>
         <a
+          id="dashboard-title"
           href="https://github.com/paradedb/benchmarker"
           style="color: inherit; text-decoration: none"
           >ParadeDB Benchmarker</a
@@ -654,6 +687,7 @@
       // Hardcoded brand colors per backend type
       const BACKEND_COLORS = {
         paradedb: "#7C3AED", // Purple (ParadeDB brand)
+        pg_textsearch: "#F97316", // Orange
         postgres: "#3B82F6", // Blue
         elasticsearch: "#10B981", // Green (Elastic brand)
         opensearch: "#EF4444", // Red (OpenSearch brand)
@@ -666,6 +700,7 @@
       let lastMetric = "p95";
       let chartType = "latency"; // 'latency' | 'hits' | 'throughput'
       let lastChartType = "latency";
+      let queryScaleType = "logarithmic";
       let colorIndex = 0;
       let lastElapsed = 0;
       let chartDuration = 30; // Will be updated from server
@@ -691,6 +726,7 @@
         isZoomed = false;
         chartType = "latency";
         lastChartType = "latency";
+        queryScaleType = "logarithmic";
         document
           .querySelectorAll(".reset-zoom")
           .forEach((btn) => btn.classList.remove("visible"));
@@ -836,7 +872,11 @@
         });
       }
 
-      function createChartOptions(yUnit = "", chartId = "") {
+      function createChartOptions(
+        yUnit = "",
+        chartId = "",
+        yScaleType = "linear",
+      ) {
         return {
           responsive: true,
           maintainAspectRatio: false,
@@ -895,7 +935,8 @@
               },
             },
             y: {
-              min: 0,
+              type: yScaleType,
+              ...(yScaleType === "linear" ? { min: 0 } : {}),
               suggestedMax: 10,
               grid: { color: getGridColor() },
               ticks: {
@@ -915,11 +956,17 @@
       function getVisibleYRange(chart, xMin, xMax) {
         let yMin = Infinity;
         let yMax = -Infinity;
+        const logarithmic =
+          chart.options.scales.y.type === "logarithmic";
 
         chart.data.datasets.forEach((dataset) => {
           if (dataset.hidden) return;
           dataset.data.forEach((point) => {
-            if (point.x >= xMin && point.x <= xMax) {
+            if (
+              point.x >= xMin &&
+              point.x <= xMax &&
+              (!logarithmic || point.y > 0)
+            ) {
               if (point.y < yMin) yMin = point.y;
               if (point.y > yMax) yMax = point.y;
             }
@@ -928,7 +975,11 @@
 
         if (yMin === Infinity) return null;
 
-        // Add 10% padding
+        if (logarithmic) {
+          return { min: yMin / 1.2, max: yMax * 1.2 };
+        }
+
+        // Add 10% padding for a linear scale.
         const padding = (yMax - yMin) * 0.1 || 1;
         return { min: Math.max(0, yMin - padding), max: yMax + padding };
       }
@@ -972,11 +1023,7 @@
         // Defer Y axis recalculation to ensure zoom plugin has finished
         setTimeout(() => {
           getAllCharts().forEach((chart) => {
-            const yRange = getVisibleYRange(chart, xMin, xMax);
-            if (yRange) {
-              chart.options.scales.y.min = yRange.min;
-              chart.options.scales.y.max = yRange.max;
-            }
+            updateChartYAxis(chart);
             chart.update("none");
           });
         }, 0);
@@ -989,9 +1036,7 @@
           // Instead, explicitly reset all scale options
           chart.options.scales.x.min = 0;
           chart.options.scales.x.max = chartDuration;
-          // Reset Y axis to auto-scale based on full dataset
-          chart.options.scales.y.min = 0;
-          chart.options.scales.y.max = getYMax(chart.data.datasets);
+          updateChartYAxis(chart);
           // Force scales to update by triggering a full update
           chart.update("resize");
         });
@@ -1033,7 +1078,10 @@
               <option value="p90">P90</option>
               <option value="p95" selected>P95</option>
               <option value="p99">P99</option>
-            </select> (ms)</span><span class="hits-unit" style="display:none;">(avg)</span><span class="throughput-unit" style="display:none;">(qps)</span></h2>
+            </select> (ms)</span><span class="hits-unit" style="display:none;">(avg)</span><span class="throughput-unit" style="display:none;">(qps)</span> <select class="scale-type-select" data-chart="${safeGroupId}" title="Y-axis scale" aria-label="Y-axis scale">
+              <option value="logarithmic" selected>Log Scale</option>
+              <option value="linear">Linear Scale</option>
+            </select></h2>
             <div class="chart-controls">
               <button class="reset-zoom" onclick="resetZoom()" title="Double-click chart to reset">Reset Zoom</button>
               <div class="legend" id="legend-${safeGroupId}"></div>
@@ -1056,6 +1104,10 @@
           `.chart-type-select[data-chart="${safeGroupId}"]`,
         );
         if (chartTypeSelect) chartTypeSelect.value = chartType;
+        const scaleTypeSelect = section.querySelector(
+          `.scale-type-select[data-chart="${safeGroupId}"]`,
+        );
+        if (scaleTypeSelect) scaleTypeSelect.value = queryScaleType;
         if (metricSelect) {
           metricSelect.addEventListener("change", (event) =>
             updateMetricSelectionForGroup(groupId, event.target.value),
@@ -1064,6 +1116,11 @@
         if (chartTypeSelect) {
           chartTypeSelect.addEventListener("change", (event) =>
             updateChartTypeForGroup(groupId, event.target.value),
+          );
+        }
+        if (scaleTypeSelect) {
+          scaleTypeSelect.addEventListener("change", (event) =>
+            updateQueryScaleTypeForGroup(groupId, event.target.value),
           );
         }
         // Sync metric wrapper visibility based on chart type
@@ -1084,7 +1141,7 @@
         const chart = new Chart(canvas, {
           type: "line",
           data: { datasets: [] },
-          options: createChartOptions("ms", groupId),
+          options: createChartOptions("ms", groupId, queryScaleType),
         });
 
         // Add double-click to reset zoom
@@ -1124,6 +1181,19 @@
           tu.style.display = chartType === "throughput" ? "inline" : "none";
         });
         if (lastData) update(lastData);
+      }
+
+      function updateQueryScaleTypeForGroup(groupId, value) {
+        if (value !== "linear" && value !== "logarithmic") return;
+        queryScaleType = value;
+        document.querySelectorAll(".scale-type-select").forEach((select) => {
+          select.value = queryScaleType;
+        });
+        Object.values(chartInstances).forEach((chart) => {
+          chart.options.scales.y.type = queryScaleType;
+          updateChartYAxis(chart);
+          chart.update("none");
+        });
       }
 
       const cpuChart = new Chart(document.getElementById("cpuChart"), {
@@ -1214,19 +1284,25 @@
 
       // Update Y axis based on zoom state
       function updateChartYAxis(chart) {
+        const yScale = chart.options.scales.y;
+        const logarithmic = yScale.type === "logarithmic";
+        if (logarithmic) delete yScale.min;
+
         if (isZoomed) {
           // When zoomed, recalculate Y range for visible data
           const xMin = chart.options.scales.x.min;
           const xMax = chart.options.scales.x.max;
           const yRange = getVisibleYRange(chart, xMin, xMax);
           if (yRange) {
-            chart.options.scales.y.min = yRange.min;
-            chart.options.scales.y.max = yRange.max;
+            yScale.min = yRange.min;
+            yScale.max = yRange.max;
+          } else {
+            delete yScale.max;
           }
         } else {
           // When not zoomed, auto-scale to full dataset
-          chart.options.scales.y.min = 0;
-          chart.options.scales.y.max = getYMax(chart.data.datasets);
+          if (!logarithmic) yScale.min = 0;
+          yScale.max = getYMax(chart.data.datasets);
         }
       }
 
@@ -1298,8 +1374,84 @@
         return Math.floor(n).toString();
       }
 
+      function formatBytes(bytes) {
+        if (!bytes || bytes <= 0) return "0B";
+        const units = ["B", "kB", "MB", "GB", "TB"];
+        let value = bytes;
+        let unit = 0;
+        while (value >= 1024 && unit < units.length - 1) {
+          value /= 1024;
+          unit++;
+        }
+        const formatted =
+          unit === 0 || value >= 10 ? Math.round(value) : value.toFixed(1);
+        return `${formatted}${units[unit]}`;
+      }
+
+      function createQueryStat(id, label) {
+        const card = document.createElement("div");
+        const value = document.createElement("div");
+        value.className = "query-stat-value";
+        value.id = id;
+        value.textContent = "0";
+        const caption = document.createElement("div");
+        caption.className = "query-stat-label";
+        caption.textContent = label;
+        card.append(value, caption);
+        return card;
+      }
+
+      // Optional metrics can arrive after the query card's first payload.
+      // Reconcile them on every refresh so the DOM never depends on that race.
+      function ensureOptionalQueryStats(queryEl, queryId, query) {
+        const statsEl = queryEl.querySelector(".query-stats");
+        if (!statsEl) return;
+
+        let updatesEl = document.getElementById(`${queryId}-updates`);
+        const walEl = document.getElementById(`${queryId}-wal-per-update`);
+        const bytesEl = document.getElementById(`${queryId}-bytes-per-query`);
+
+        if (
+          query.indexReadBytes != null &&
+          query.indexHitBytes != null &&
+          !bytesEl
+        ) {
+          const bytesCard = createQueryStat(
+            `${queryId}-bytes-per-query`,
+            "Per Query",
+          );
+          statsEl.insertBefore(bytesCard, updatesEl?.parentElement || null);
+        }
+        if (query.updates != null && !updatesEl) {
+          const updatesCard = createQueryStat(`${queryId}-updates`, "Updates");
+          updatesCard.className = "query-stat-update-start";
+          statsEl.appendChild(updatesCard);
+          updatesEl = updatesCard.firstElementChild;
+        }
+        if (
+          query.updates != null &&
+          query.walBytesPerUpdate != null &&
+          !walEl
+        ) {
+          const walCard = createQueryStat(
+            `${queryId}-wal-per-update`,
+            "WAL",
+          );
+          statsEl.appendChild(walCard);
+        }
+      }
+
       function safeId(value) {
         return String(value).replace(/[^a-zA-Z0-9_-]/g, "_");
+      }
+
+      function getTimelineStart(queries, fallback) {
+        let start = Infinity;
+        Object.values(queries).forEach((query) => {
+          const time = query.timeline?.[0]?.time;
+          if (time != null && time < start) start = time;
+        });
+        return Number.isFinite(start) ? start : fallback;
       }
 
       function formatLatency(ms) {
@@ -1312,8 +1464,8 @@
       }
 
       function hasQueries(run) {
-        // Show run if it has any queries (even without timeline data yet)
-        return Object.keys(run.queries || {}).length > 0;
+        // Prewarming creates the backend card before measured samples arrive.
+        return run.prewarming || Object.keys(run.queries || {}).length > 0;
       }
 
       function hasQueryTimelines(run) {
@@ -1424,10 +1576,30 @@
               <div class="stat-group-header">
                 <div id="${labelId}" class="stat-group-label" style="color: ${color};">${escapeHtml(getBaseName(name))}</div>${limitsStr}
               </div>
+              <div class="prewarm-status" id="${safeNameId}-prewarm">
+                <div class="prewarm-label">
+                  <span>Prewarm</span>
+                  <span id="${safeNameId}-prewarm-percent">0%</span>
+                </div>
+                <div class="prewarm-track">
+                  <div class="prewarm-fill" id="${safeNameId}-prewarm-fill" style="background: ${color};"></div>
+                </div>
+              </div>
               <div class="query-details" id="${queryContainerId}"></div>
             `;
               container.appendChild(el);
             }
+
+            const prewarmEl = document.getElementById(`${safeNameId}-prewarm`);
+            const progress = Math.max(
+              0,
+              Math.min(100, Number(run.prewarmProgress) || 0),
+            );
+            prewarmEl.style.display = run.prewarming ? "block" : "none";
+            document.getElementById(`${safeNameId}-prewarm-percent`).textContent =
+              `${Math.floor(progress)}%`;
+            document.getElementById(`${safeNameId}-prewarm-fill`).style.width =
+              `${progress}%`;
 
             // Set up config click handler after element is in the DOM.
             // Runs on every update so it works even if config arrives later.
@@ -1455,6 +1627,7 @@
 
             queryNames.forEach((qName) => {
               const q = queries[qName];
+              const displayName = q.displayName || qName;
               const queryKey = `${name}::${qName}`;
               const queryId = `${safeNameId}-${safeId(qName)}`;
               let queryEl = document.getElementById(queryId);
@@ -1479,10 +1652,9 @@
                   infoParts.length > 0
                     ? `<span class="query-info">${infoParts.map(escapeHtml).join(" · ")}</span>`
                     : "";
-
                 queryEl.innerHTML = `
                 <div class="query-header">
-                  <div class="query-name">${escapeHtml(qName)}${infoStr}</div>
+                  <div class="query-name">${escapeHtml(displayName)}${infoStr}</div>
                 </div>
                 <div class="query-stats">
                   <div><div class="query-stat-value" id="${queryId}-qps">0</div><div class="query-stat-label">QPS</div></div>
@@ -1491,15 +1663,18 @@
                   <div><div class="query-stat-value" id="${queryId}-p95">0</div><div class="query-stat-label">P95</div></div>
                   <div><div class="query-stat-value" id="${queryId}-p99">0</div><div class="query-stat-label">P99</div></div>
                   <div><div class="query-stat-value" id="${queryId}-max">0</div><div class="query-stat-label">Max</div></div>
+                  <div><div class="query-stat-value" id="${queryId}-count">0</div><div class="query-stat-label">Queries</div></div>
                 </div>
               `;
                 queryEl.addEventListener("click", () =>
-                  showQueryModal(queryKey, qName),
+                  showQueryModal(queryKey, displayName),
                 );
                 queriesEl.appendChild(queryEl);
               }
 
-              // Update values only
+              ensureOptionalQueryStats(queryEl, queryId, q);
+
+              // Update values
               document.getElementById(`${queryId}-qps`).textContent =
                 formatNumber(q.qps || 0);
               document.getElementById(`${queryId}-min`).textContent =
@@ -1512,6 +1687,30 @@
                 formatLatency(q.p99);
               document.getElementById(`${queryId}-max`).textContent =
                 formatLatency(q.max);
+              document.getElementById(`${queryId}-count`).textContent =
+                formatNumber(q.count || 0);
+              const updatesEl = document.getElementById(`${queryId}-updates`);
+              if (updatesEl) {
+                updatesEl.textContent = formatNumber(q.updates ?? 0);
+              }
+              const walPerUpdateEl = document.getElementById(
+                `${queryId}-wal-per-update`,
+              );
+              if (walPerUpdateEl) {
+                walPerUpdateEl.textContent = formatBytes(
+                  q.walBytesPerUpdate ?? 0,
+                );
+              }
+              const bytesPerQueryEl = document.getElementById(
+                `${queryId}-bytes-per-query`,
+              );
+              if (bytesPerQueryEl) {
+                const totalIndexBytes =
+                  (q.indexReadBytes || 0) + (q.indexHitBytes || 0);
+                bytesPerQueryEl.textContent = formatBytes(
+                  q.count > 0 ? totalIndexBytes / q.count : 0,
+                );
+              }
             });
           });
         });
@@ -1586,12 +1785,13 @@
             const queryNames = Object.keys(queries).sort();
 
             queryNames.forEach((qName, idx) => {
+              const displayName = queries[qName].displayName || qName;
               const color =
                 idx === 0 ? baseColor : shadeColor(baseColor, idx * 15);
               const isEnabled = selectedQueries.has(qName);
               const disabledClass = isEnabled ? "" : " disabled";
               items.push(
-                `<div class="legend-item${disabledClass}" data-query="${escapeHtml(qName)}" title="Click to toggle, Shift+click to isolate"><div class="legend-color" style="background: ${color}"></div> ${escapeHtml(qName)}</div>`,
+                `<div class="legend-item${disabledClass}" data-query="${escapeHtml(qName)}" title="Click to toggle, Shift+click to isolate"><div class="legend-color" style="background: ${color}"></div> ${escapeHtml(displayName)}</div>`,
               );
             });
           });
@@ -1911,6 +2111,12 @@
         // Store for filter updates
         lastData = data;
 
+        const dashboardTitle = data.selectedQuery
+          ? `ParadeDB Benchmarker - ${data.selectedQuery}`
+          : "ParadeDB Benchmarker";
+        document.getElementById("dashboard-title").textContent = dashboardTitle;
+        document.title = dashboardTitle;
+
         // Detect restart: elapsed time went backwards
         if (data.elapsed < lastElapsed - 1) {
           resetState();
@@ -2018,8 +2224,10 @@
               selectedQueries.has(qn),
             );
 
-            // Use each run's own start time so scenarios starting later still begin at x=0
-            const startTime = run.startTime || 0;
+            // Timeline points are emitted on the dashboard's next flush, after
+            // scenario_started. Use the first point as the visual run baseline
+            // so the earliest series begins exactly at x=0.
+            const startTime = getTimelineStart(queries, run.startTime || 0);
 
             if (queryNames.length === 0 && Object.keys(queries).length === 0) {
               // No query breakdown available, skip this run
@@ -2027,6 +2235,7 @@
               // Show each selected query as separate line
               queryNames.forEach((qName, idx) => {
                 const q = queries[qName];
+                const displayName = q.displayName || qName;
                 // Slightly vary color for multiple queries in same run
                 const color =
                   idx === 0 ? baseColor : shadeColor(baseColor, idx * 15);
@@ -2043,7 +2252,7 @@
                 });
                 datasets.push({
                   datasetKey: `${name}::${qName}`,
-                  label: qName,
+                  label: displayName,
                   borderColor: color,
                   backgroundColor: color,
                   data: timelineData,
