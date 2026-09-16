@@ -14,6 +14,11 @@
       "disjunction": "the",
       "phrase": "\"the\"",
       "engines": {
+        "tin": {
+          "conjunction": "the",
+          "disjunction": "the",
+          "phrase": "\"the\""
+        },
         "paradedb": {
           "conjunction": "the",
           "disjunction": "the",
@@ -43,6 +48,11 @@
       "disjunction": "griffith OR observatory",
       "phrase": "\"griffith observatory\"",
       "engines": {
+        "tin": {
+          "conjunction": "griffith AND observatory",
+          "disjunction": "griffith OR observatory",
+          "phrase": "\"griffith observatory\""
+        },
         "paradedb": {
           "conjunction": "griffith AND observatory",
           "disjunction": "griffith OR observatory",
@@ -72,6 +82,11 @@
       "disjunction": "bowel OR obstruction",
       "phrase": "\"bowel obstruction\"",
       "engines": {
+        "tin": {
+          "conjunction": "bowel AND obstruction",
+          "disjunction": "bowel OR obstruction",
+          "phrase": "\"bowel obstruction\""
+        },
         "paradedb": {
           "conjunction": "bowel AND obstruction",
           "disjunction": "bowel OR obstruction",
@@ -101,6 +116,11 @@
       "disjunction": "vicenza OR italy",
       "phrase": "\"vicenza italy\"",
       "engines": {
+        "tin": {
+          "conjunction": "vicenza AND italy",
+          "disjunction": "vicenza OR italy",
+          "phrase": "\"vicenza italy\""
+        },
         "paradedb": {
           "conjunction": "vicenza AND italy",
           "disjunction": "vicenza OR italy",
@@ -130,6 +150,11 @@
       "disjunction": "digital OR scanning",
       "phrase": "\"digital scanning\"",
       "engines": {
+        "tin": {
+          "conjunction": "digital AND scanning",
+          "disjunction": "digital OR scanning",
+          "phrase": "\"digital scanning\""
+        },
         "paradedb": {
           "conjunction": "digital AND scanning",
           "disjunction": "digital OR scanning",
@@ -159,6 +184,11 @@
       "disjunction": "plus OR size OR clothing",
       "phrase": "\"plus size clothing\"",
       "engines": {
+        "tin": {
+          "conjunction": "plus AND size AND clothing",
+          "disjunction": "plus OR size OR clothing",
+          "phrase": "\"plus size clothing\""
+        },
         "paradedb": {
           "conjunction": "plus AND size AND clothing",
           "disjunction": "plus OR size OR clothing",
@@ -188,6 +218,11 @@
       "disjunction": "borders OR books",
       "phrase": "\"borders books\"",
       "engines": {
+        "tin": {
+          "conjunction": "borders AND books",
+          "disjunction": "borders OR books",
+          "phrase": "\"borders books\""
+        },
         "paradedb": {
           "conjunction": "borders AND books",
           "disjunction": "borders OR books",
@@ -217,6 +252,11 @@
       "disjunction": "american OR funds",
       "phrase": "\"american funds\"",
       "engines": {
+        "tin": {
+          "conjunction": "american AND funds",
+          "disjunction": "american OR funds",
+          "phrase": "\"american funds\""
+        },
         "paradedb": {
           "conjunction": "american AND funds",
           "disjunction": "american OR funds",
@@ -246,6 +286,11 @@
       "disjunction": "scottsdale OR az",
       "phrase": "\"scottsdale az\"",
       "engines": {
+        "tin": {
+          "conjunction": "scottsdale AND az",
+          "disjunction": "scottsdale OR az",
+          "phrase": "\"scottsdale az\""
+        },
         "paradedb": {
           "conjunction": "scottsdale AND az",
           "disjunction": "scottsdale OR az",
@@ -275,6 +320,11 @@
       "disjunction": "wisconsin OR attorney OR general",
       "phrase": "\"wisconsin attorney general\"",
       "engines": {
+        "tin": {
+          "conjunction": "wisconsin AND attorney AND general",
+          "disjunction": "wisconsin OR attorney OR general",
+          "phrase": "\"wisconsin attorney general\""
+        },
         "paradedb": {
           "conjunction": "wisconsin AND attorney AND general",
           "disjunction": "wisconsin OR attorney OR general",
@@ -304,6 +354,11 @@
       "disjunction": "the OR english OR restoration",
       "phrase": "\"the english restoration\"",
       "engines": {
+        "tin": {
+          "conjunction": "the AND english AND restoration",
+          "disjunction": "the OR english OR restoration",
+          "phrase": "\"the english restoration\""
+        },
         "paradedb": {
           "conjunction": "the AND english AND restoration",
           "disjunction": "the OR english OR restoration",
@@ -333,6 +388,11 @@
       "disjunction": "freelance OR work",
       "phrase": "\"freelance work\"",
       "engines": {
+        "tin": {
+          "conjunction": "freelance AND work",
+          "disjunction": "freelance OR work",
+          "phrase": "\"freelance work\""
+        },
         "paradedb": {
           "conjunction": "freelance AND work",
           "disjunction": "freelance OR work",
@@ -362,6 +422,11 @@
       "disjunction": "french OR culinary OR institute",
       "phrase": "\"french culinary institute\"",
       "engines": {
+        "tin": {
+          "conjunction": "french AND culinary AND institute",
+          "disjunction": "french OR culinary OR institute",
+          "phrase": "\"french culinary institute\""
+        },
         "paradedb": {
           "conjunction": "french AND culinary AND institute",
           "disjunction": "french OR culinary OR institute",
@@ -391,6 +456,11 @@
       "disjunction": "color OR combinations",
       "phrase": "\"color combinations\"",
       "engines": {
+        "tin": {
+          "conjunction": "color AND combinations",
+          "disjunction": "color OR combinations",
+          "phrase": "\"color combinations\""
+        },
         "paradedb": {
           "conjunction": "color AND combinations",
           "disjunction": "color OR combinations",
@@ -420,6 +490,11 @@
       "disjunction": "italian OR translation",
       "phrase": "\"italian translation\"",
       "engines": {
+        "tin": {
+          "conjunction": "italian AND translation",
+          "disjunction": "italian OR translation",
+          "phrase": "\"italian translation\""
+        },
         "paradedb": {
           "conjunction": "italian AND translation",
           "disjunction": "italian OR translation",
@@ -449,6 +524,11 @@
       "disjunction": "milwaukee OR newspaper",
       "phrase": "\"milwaukee newspaper\"",
       "engines": {
+        "tin": {
+          "conjunction": "milwaukee AND newspaper",
+          "disjunction": "milwaukee OR newspaper",
+          "phrase": "\"milwaukee newspaper\""
+        },
         "paradedb": {
           "conjunction": "milwaukee AND newspaper",
           "disjunction": "milwaukee OR newspaper",
@@ -478,6 +558,11 @@
       "disjunction": "robert OR green OR ingersoll",
       "phrase": "\"robert green ingersoll\"",
       "engines": {
+        "tin": {
+          "conjunction": "robert AND green AND ingersoll",
+          "disjunction": "robert OR green OR ingersoll",
+          "phrase": "\"robert green ingersoll\""
+        },
         "paradedb": {
           "conjunction": "robert AND green AND ingersoll",
           "disjunction": "robert OR green OR ingersoll",
@@ -507,6 +592,11 @@
       "disjunction": "omaha OR symphony",
       "phrase": "\"omaha symphony\"",
       "engines": {
+        "tin": {
+          "conjunction": "omaha AND symphony",
+          "disjunction": "omaha OR symphony",
+          "phrase": "\"omaha symphony\""
+        },
         "paradedb": {
           "conjunction": "omaha AND symphony",
           "disjunction": "omaha OR symphony",
@@ -536,6 +626,11 @@
       "disjunction": "body OR painting",
       "phrase": "\"body painting\"",
       "engines": {
+        "tin": {
+          "conjunction": "body AND painting",
+          "disjunction": "body OR painting",
+          "phrase": "\"body painting\""
+        },
         "paradedb": {
           "conjunction": "body AND painting",
           "disjunction": "body OR painting",
@@ -565,6 +660,11 @@
       "disjunction": "who OR dares OR wins",
       "phrase": "\"who dares wins\"",
       "engines": {
+        "tin": {
+          "conjunction": "who AND dares AND wins",
+          "disjunction": "who OR dares OR wins",
+          "phrase": "\"who dares wins\""
+        },
         "paradedb": {
           "conjunction": "who AND dares AND wins",
           "disjunction": "who OR dares OR wins",
@@ -594,6 +694,11 @@
       "disjunction": "west OR palm OR beach OR florida",
       "phrase": "\"west palm beach florida\"",
       "engines": {
+        "tin": {
+          "conjunction": "west AND palm AND beach AND florida",
+          "disjunction": "west OR palm OR beach OR florida",
+          "phrase": "\"west palm beach florida\""
+        },
         "paradedb": {
           "conjunction": "west AND palm AND beach AND florida",
           "disjunction": "west OR palm OR beach OR florida",
@@ -623,6 +728,11 @@
       "disjunction": "stone OR mountain",
       "phrase": "\"stone mountain\"",
       "engines": {
+        "tin": {
+          "conjunction": "stone AND mountain",
+          "disjunction": "stone OR mountain",
+          "phrase": "\"stone mountain\""
+        },
         "paradedb": {
           "conjunction": "stone AND mountain",
           "disjunction": "stone OR mountain",
@@ -652,6 +762,11 @@
       "disjunction": "san OR francisco",
       "phrase": "\"san francisco\"",
       "engines": {
+        "tin": {
+          "conjunction": "san AND francisco",
+          "disjunction": "san OR francisco",
+          "phrase": "\"san francisco\""
+        },
         "paradedb": {
           "conjunction": "san AND francisco",
           "disjunction": "san OR francisco",
@@ -681,6 +796,11 @@
       "disjunction": "ford OR modeling OR agency",
       "phrase": "\"ford modeling agency\"",
       "engines": {
+        "tin": {
+          "conjunction": "ford AND modeling AND agency",
+          "disjunction": "ford OR modeling OR agency",
+          "phrase": "\"ford modeling agency\""
+        },
         "paradedb": {
           "conjunction": "ford AND modeling AND agency",
           "disjunction": "ford OR modeling OR agency",
@@ -710,6 +830,11 @@
       "disjunction": "glass OR works",
       "phrase": "\"glass works\"",
       "engines": {
+        "tin": {
+          "conjunction": "glass AND works",
+          "disjunction": "glass OR works",
+          "phrase": "\"glass works\""
+        },
         "paradedb": {
           "conjunction": "glass AND works",
           "disjunction": "glass OR works",
@@ -739,6 +864,11 @@
       "disjunction": "personal OR loan",
       "phrase": "\"personal loan\"",
       "engines": {
+        "tin": {
+          "conjunction": "personal AND loan",
+          "disjunction": "personal OR loan",
+          "phrase": "\"personal loan\""
+        },
         "paradedb": {
           "conjunction": "personal AND loan",
           "disjunction": "personal OR loan",
@@ -768,6 +898,11 @@
       "disjunction": "texas OR state OR legislature",
       "phrase": "\"texas state legislature\"",
       "engines": {
+        "tin": {
+          "conjunction": "texas AND state AND legislature",
+          "disjunction": "texas OR state OR legislature",
+          "phrase": "\"texas state legislature\""
+        },
         "paradedb": {
           "conjunction": "texas AND state AND legislature",
           "disjunction": "texas OR state OR legislature",
@@ -797,6 +932,11 @@
       "disjunction": "spiritual OR warfare",
       "phrase": "\"spiritual warfare\"",
       "engines": {
+        "tin": {
+          "conjunction": "spiritual AND warfare",
+          "disjunction": "spiritual OR warfare",
+          "phrase": "\"spiritual warfare\""
+        },
         "paradedb": {
           "conjunction": "spiritual AND warfare",
           "disjunction": "spiritual OR warfare",
@@ -826,6 +966,11 @@
       "disjunction": "georgia OR public OR broadcasting",
       "phrase": "\"georgia public broadcasting\"",
       "engines": {
+        "tin": {
+          "conjunction": "georgia AND public AND broadcasting",
+          "disjunction": "georgia OR public OR broadcasting",
+          "phrase": "\"georgia public broadcasting\""
+        },
         "paradedb": {
           "conjunction": "georgia AND public AND broadcasting",
           "disjunction": "georgia OR public OR broadcasting",
@@ -855,6 +1000,11 @@
       "disjunction": "graffiti OR art",
       "phrase": "\"graffiti art\"",
       "engines": {
+        "tin": {
+          "conjunction": "graffiti AND art",
+          "disjunction": "graffiti OR art",
+          "phrase": "\"graffiti art\""
+        },
         "paradedb": {
           "conjunction": "graffiti AND art",
           "disjunction": "graffiti OR art",
@@ -884,6 +1034,11 @@
       "disjunction": "texas OR death OR row",
       "phrase": "\"texas death row\"",
       "engines": {
+        "tin": {
+          "conjunction": "texas AND death AND row",
+          "disjunction": "texas OR death OR row",
+          "phrase": "\"texas death row\""
+        },
         "paradedb": {
           "conjunction": "texas AND death AND row",
           "disjunction": "texas OR death OR row",
@@ -913,6 +1068,11 @@
       "disjunction": "catholic OR answers",
       "phrase": "\"catholic answers\"",
       "engines": {
+        "tin": {
+          "conjunction": "catholic AND answers",
+          "disjunction": "catholic OR answers",
+          "phrase": "\"catholic answers\""
+        },
         "paradedb": {
           "conjunction": "catholic AND answers",
           "disjunction": "catholic OR answers",
@@ -942,6 +1102,11 @@
       "disjunction": "interest OR only",
       "phrase": "\"interest only\"",
       "engines": {
+        "tin": {
+          "conjunction": "interest AND only",
+          "disjunction": "interest OR only",
+          "phrase": "\"interest only\""
+        },
         "paradedb": {
           "conjunction": "interest AND only",
           "disjunction": "interest OR only",
@@ -971,6 +1136,11 @@
       "disjunction": "region OR iv",
       "phrase": "\"region iv\"",
       "engines": {
+        "tin": {
+          "conjunction": "region AND iv",
+          "disjunction": "region OR iv",
+          "phrase": "\"region iv\""
+        },
         "paradedb": {
           "conjunction": "region AND iv",
           "disjunction": "region OR iv",
@@ -1000,6 +1170,11 @@
       "disjunction": "army OR reserve",
       "phrase": "\"army reserve\"",
       "engines": {
+        "tin": {
+          "conjunction": "army AND reserve",
+          "disjunction": "army OR reserve",
+          "phrase": "\"army reserve\""
+        },
         "paradedb": {
           "conjunction": "army AND reserve",
           "disjunction": "army OR reserve",
@@ -1029,6 +1204,11 @@
       "disjunction": "chicken OR coop",
       "phrase": "\"chicken coop\"",
       "engines": {
+        "tin": {
+          "conjunction": "chicken AND coop",
+          "disjunction": "chicken OR coop",
+          "phrase": "\"chicken coop\""
+        },
         "paradedb": {
           "conjunction": "chicken AND coop",
           "disjunction": "chicken OR coop",
@@ -1058,6 +1238,11 @@
       "disjunction": "people OR having OR sex",
       "phrase": "\"people having sex\"",
       "engines": {
+        "tin": {
+          "conjunction": "people AND having AND sex",
+          "disjunction": "people OR having OR sex",
+          "phrase": "\"people having sex\""
+        },
         "paradedb": {
           "conjunction": "people AND having AND sex",
           "disjunction": "people OR having OR sex",
@@ -1087,6 +1272,11 @@
       "disjunction": "new OR york OR population",
       "phrase": "\"new york population\"",
       "engines": {
+        "tin": {
+          "conjunction": "new AND york AND population",
+          "disjunction": "new OR york OR population",
+          "phrase": "\"new york population\""
+        },
         "paradedb": {
           "conjunction": "new AND york AND population",
           "disjunction": "new OR york OR population",
@@ -1116,6 +1306,11 @@
       "disjunction": "most OR improved OR player",
       "phrase": "\"most improved player\"",
       "engines": {
+        "tin": {
+          "conjunction": "most AND improved AND player",
+          "disjunction": "most OR improved OR player",
+          "phrase": "\"most improved player\""
+        },
         "paradedb": {
           "conjunction": "most AND improved AND player",
           "disjunction": "most OR improved OR player",
@@ -1145,6 +1340,11 @@
       "disjunction": "ear OR ache",
       "phrase": "\"ear ache\"",
       "engines": {
+        "tin": {
+          "conjunction": "ear AND ache",
+          "disjunction": "ear OR ache",
+          "phrase": "\"ear ache\""
+        },
         "paradedb": {
           "conjunction": "ear AND ache",
           "disjunction": "ear OR ache",
@@ -1174,6 +1374,11 @@
       "disjunction": "mercury OR insurance",
       "phrase": "\"mercury insurance\"",
       "engines": {
+        "tin": {
+          "conjunction": "mercury AND insurance",
+          "disjunction": "mercury OR insurance",
+          "phrase": "\"mercury insurance\""
+        },
         "paradedb": {
           "conjunction": "mercury AND insurance",
           "disjunction": "mercury OR insurance",
@@ -1203,6 +1408,11 @@
       "disjunction": "battle OR of OR the OR bulge",
       "phrase": "\"battle of the bulge\"",
       "engines": {
+        "tin": {
+          "conjunction": "battle AND of AND the AND bulge",
+          "disjunction": "battle OR of OR the OR bulge",
+          "phrase": "\"battle of the bulge\""
+        },
         "paradedb": {
           "conjunction": "battle AND of AND the AND bulge",
           "disjunction": "battle OR of OR the OR bulge",
@@ -1232,6 +1442,11 @@
       "disjunction": "secretary OR of OR state",
       "phrase": "\"secretary of state\"",
       "engines": {
+        "tin": {
+          "conjunction": "secretary AND of AND state",
+          "disjunction": "secretary OR of OR state",
+          "phrase": "\"secretary of state\""
+        },
         "paradedb": {
           "conjunction": "secretary AND of AND state",
           "disjunction": "secretary OR of OR state",
@@ -1261,6 +1476,11 @@
       "disjunction": "third OR trimester",
       "phrase": "\"third trimester\"",
       "engines": {
+        "tin": {
+          "conjunction": "third AND trimester",
+          "disjunction": "third OR trimester",
+          "phrase": "\"third trimester\""
+        },
         "paradedb": {
           "conjunction": "third AND trimester",
           "disjunction": "third OR trimester",
@@ -1290,6 +1510,11 @@
       "disjunction": "hempstead OR new OR york",
       "phrase": "\"hempstead new york\"",
       "engines": {
+        "tin": {
+          "conjunction": "hempstead AND new AND york",
+          "disjunction": "hempstead OR new OR york",
+          "phrase": "\"hempstead new york\""
+        },
         "paradedb": {
           "conjunction": "hempstead AND new AND york",
           "disjunction": "hempstead OR new OR york",
@@ -1319,6 +1544,11 @@
       "disjunction": "university OR of OR washington",
       "phrase": "\"university of washington\"",
       "engines": {
+        "tin": {
+          "conjunction": "university AND of AND washington",
+          "disjunction": "university OR of OR washington",
+          "phrase": "\"university of washington\""
+        },
         "paradedb": {
           "conjunction": "university AND of AND washington",
           "disjunction": "university OR of OR washington",
@@ -1348,6 +1578,11 @@
       "disjunction": "japan OR airlines",
       "phrase": "\"japan airlines\"",
       "engines": {
+        "tin": {
+          "conjunction": "japan AND airlines",
+          "disjunction": "japan OR airlines",
+          "phrase": "\"japan airlines\""
+        },
         "paradedb": {
           "conjunction": "japan AND airlines",
           "disjunction": "japan OR airlines",
@@ -1377,6 +1612,11 @@
       "disjunction": "freedom OR tower",
       "phrase": "\"freedom tower\"",
       "engines": {
+        "tin": {
+          "conjunction": "freedom AND tower",
+          "disjunction": "freedom OR tower",
+          "phrase": "\"freedom tower\""
+        },
         "paradedb": {
           "conjunction": "freedom AND tower",
           "disjunction": "freedom OR tower",
@@ -1406,6 +1646,11 @@
       "disjunction": "virginia OR usa",
       "phrase": "\"virginia usa\"",
       "engines": {
+        "tin": {
+          "conjunction": "virginia AND usa",
+          "disjunction": "virginia OR usa",
+          "phrase": "\"virginia usa\""
+        },
         "paradedb": {
           "conjunction": "virginia AND usa",
           "disjunction": "virginia OR usa",
@@ -1435,6 +1680,11 @@
       "disjunction": "kasota OR stone",
       "phrase": "\"kasota stone\"",
       "engines": {
+        "tin": {
+          "conjunction": "kasota AND stone",
+          "disjunction": "kasota OR stone",
+          "phrase": "\"kasota stone\""
+        },
         "paradedb": {
           "conjunction": "kasota AND stone",
           "disjunction": "kasota OR stone",
@@ -1464,6 +1714,11 @@
       "disjunction": "intramuscular OR injections",
       "phrase": "\"intramuscular injections\"",
       "engines": {
+        "tin": {
+          "conjunction": "intramuscular AND injections",
+          "disjunction": "intramuscular OR injections",
+          "phrase": "\"intramuscular injections\""
+        },
         "paradedb": {
           "conjunction": "intramuscular AND injections",
           "disjunction": "intramuscular OR injections",
@@ -1493,6 +1748,11 @@
       "disjunction": "jesus OR as OR a OR child",
       "phrase": "\"jesus as a child\"",
       "engines": {
+        "tin": {
+          "conjunction": "jesus AND as AND a AND child",
+          "disjunction": "jesus OR as OR a OR child",
+          "phrase": "\"jesus as a child\""
+        },
         "paradedb": {
           "conjunction": "jesus AND as AND a AND child",
           "disjunction": "jesus OR as OR a OR child",
@@ -1522,6 +1782,11 @@
       "disjunction": "montessori OR schools",
       "phrase": "\"montessori schools\"",
       "engines": {
+        "tin": {
+          "conjunction": "montessori AND schools",
+          "disjunction": "montessori OR schools",
+          "phrase": "\"montessori schools\""
+        },
         "paradedb": {
           "conjunction": "montessori AND schools",
           "disjunction": "montessori OR schools",
@@ -1551,6 +1816,11 @@
       "disjunction": "oxford OR dictionary",
       "phrase": "\"oxford dictionary\"",
       "engines": {
+        "tin": {
+          "conjunction": "oxford AND dictionary",
+          "disjunction": "oxford OR dictionary",
+          "phrase": "\"oxford dictionary\""
+        },
         "paradedb": {
           "conjunction": "oxford AND dictionary",
           "disjunction": "oxford OR dictionary",
@@ -1580,6 +1850,11 @@
       "disjunction": "state OR of OR louisiana",
       "phrase": "\"state of louisiana\"",
       "engines": {
+        "tin": {
+          "conjunction": "state AND of AND louisiana",
+          "disjunction": "state OR of OR louisiana",
+          "phrase": "\"state of louisiana\""
+        },
         "paradedb": {
           "conjunction": "state AND of AND louisiana",
           "disjunction": "state OR of OR louisiana",
@@ -1609,6 +1884,11 @@
       "disjunction": "penny OR stocks",
       "phrase": "\"penny stocks\"",
       "engines": {
+        "tin": {
+          "conjunction": "penny AND stocks",
+          "disjunction": "penny OR stocks",
+          "phrase": "\"penny stocks\""
+        },
         "paradedb": {
           "conjunction": "penny AND stocks",
           "disjunction": "penny OR stocks",
@@ -1638,6 +1918,11 @@
       "disjunction": "cured OR of OR cancer",
       "phrase": "\"cured of cancer\"",
       "engines": {
+        "tin": {
+          "conjunction": "cured AND of AND cancer",
+          "disjunction": "cured OR of OR cancer",
+          "phrase": "\"cured of cancer\""
+        },
         "paradedb": {
           "conjunction": "cured AND of AND cancer",
           "disjunction": "cured OR of OR cancer",
@@ -1667,6 +1952,11 @@
       "disjunction": "lord OR of OR the OR rings",
       "phrase": "\"lord of the rings\"",
       "engines": {
+        "tin": {
+          "conjunction": "lord AND of AND the AND rings",
+          "disjunction": "lord OR of OR the OR rings",
+          "phrase": "\"lord of the rings\""
+        },
         "paradedb": {
           "conjunction": "lord AND of AND the AND rings",
           "disjunction": "lord OR of OR the OR rings",
@@ -1696,6 +1986,11 @@
       "disjunction": "helen OR of OR troy",
       "phrase": "\"helen of troy\"",
       "engines": {
+        "tin": {
+          "conjunction": "helen AND of AND troy",
+          "disjunction": "helen OR of OR troy",
+          "phrase": "\"helen of troy\""
+        },
         "paradedb": {
           "conjunction": "helen AND of AND troy",
           "disjunction": "helen OR of OR troy",
@@ -1725,6 +2020,11 @@
       "disjunction": "long OR legs",
       "phrase": "\"long legs\"",
       "engines": {
+        "tin": {
+          "conjunction": "long AND legs",
+          "disjunction": "long OR legs",
+          "phrase": "\"long legs\""
+        },
         "paradedb": {
           "conjunction": "long AND legs",
           "disjunction": "long OR legs",
@@ -1754,6 +2054,11 @@
       "disjunction": "sore OR muscles",
       "phrase": "\"sore muscles\"",
       "engines": {
+        "tin": {
+          "conjunction": "sore AND muscles",
+          "disjunction": "sore OR muscles",
+          "phrase": "\"sore muscles\""
+        },
         "paradedb": {
           "conjunction": "sore AND muscles",
           "disjunction": "sore OR muscles",
@@ -1783,6 +2088,11 @@
       "disjunction": "connecticut OR post",
       "phrase": "\"connecticut post\"",
       "engines": {
+        "tin": {
+          "conjunction": "connecticut AND post",
+          "disjunction": "connecticut OR post",
+          "phrase": "\"connecticut post\""
+        },
         "paradedb": {
           "conjunction": "connecticut AND post",
           "disjunction": "connecticut OR post",
@@ -1812,6 +2122,11 @@
       "disjunction": "danbury OR ct",
       "phrase": "\"danbury ct\"",
       "engines": {
+        "tin": {
+          "conjunction": "danbury AND ct",
+          "disjunction": "danbury OR ct",
+          "phrase": "\"danbury ct\""
+        },
         "paradedb": {
           "conjunction": "danbury AND ct",
           "disjunction": "danbury OR ct",
@@ -1841,6 +2156,11 @@
       "disjunction": "chicago OR bulls",
       "phrase": "\"chicago bulls\"",
       "engines": {
+        "tin": {
+          "conjunction": "chicago AND bulls",
+          "disjunction": "chicago OR bulls",
+          "phrase": "\"chicago bulls\""
+        },
         "paradedb": {
           "conjunction": "chicago AND bulls",
           "disjunction": "chicago OR bulls",
@@ -1870,6 +2190,11 @@
       "disjunction": "child OR support",
       "phrase": "\"child support\"",
       "engines": {
+        "tin": {
+          "conjunction": "child AND support",
+          "disjunction": "child OR support",
+          "phrase": "\"child support\""
+        },
         "paradedb": {
           "conjunction": "child AND support",
           "disjunction": "child OR support",
@@ -1899,6 +2224,11 @@
       "disjunction": "iq OR scores",
       "phrase": "\"iq scores\"",
       "engines": {
+        "tin": {
+          "conjunction": "iq AND scores",
+          "disjunction": "iq OR scores",
+          "phrase": "\"iq scores\""
+        },
         "paradedb": {
           "conjunction": "iq AND scores",
           "disjunction": "iq OR scores",
@@ -1928,6 +2258,11 @@
       "disjunction": "philadelphia OR phillies",
       "phrase": "\"philadelphia phillies\"",
       "engines": {
+        "tin": {
+          "conjunction": "philadelphia AND phillies",
+          "disjunction": "philadelphia OR phillies",
+          "phrase": "\"philadelphia phillies\""
+        },
         "paradedb": {
           "conjunction": "philadelphia AND phillies",
           "disjunction": "philadelphia OR phillies",
@@ -1957,6 +2292,11 @@
       "disjunction": "trans OR siberian OR orchestra",
       "phrase": "\"trans siberian orchestra\"",
       "engines": {
+        "tin": {
+          "conjunction": "trans AND siberian AND orchestra",
+          "disjunction": "trans OR siberian OR orchestra",
+          "phrase": "\"trans siberian orchestra\""
+        },
         "paradedb": {
           "conjunction": "trans AND siberian AND orchestra",
           "disjunction": "trans OR siberian OR orchestra",
@@ -1986,6 +2326,11 @@
       "disjunction": "naomi OR wallace",
       "phrase": "\"naomi wallace\"",
       "engines": {
+        "tin": {
+          "conjunction": "naomi AND wallace",
+          "disjunction": "naomi OR wallace",
+          "phrase": "\"naomi wallace\""
+        },
         "paradedb": {
           "conjunction": "naomi AND wallace",
           "disjunction": "naomi OR wallace",
@@ -2015,6 +2360,11 @@
       "disjunction": "montgomery OR college",
       "phrase": "\"montgomery college\"",
       "engines": {
+        "tin": {
+          "conjunction": "montgomery AND college",
+          "disjunction": "montgomery OR college",
+          "phrase": "\"montgomery college\""
+        },
         "paradedb": {
           "conjunction": "montgomery AND college",
           "disjunction": "montgomery OR college",
@@ -2044,6 +2394,11 @@
       "disjunction": "belcourt OR castle",
       "phrase": "\"belcourt castle\"",
       "engines": {
+        "tin": {
+          "conjunction": "belcourt AND castle",
+          "disjunction": "belcourt OR castle",
+          "phrase": "\"belcourt castle\""
+        },
         "paradedb": {
           "conjunction": "belcourt AND castle",
           "disjunction": "belcourt OR castle",
@@ -2073,6 +2428,11 @@
       "disjunction": "binghamton OR new OR york",
       "phrase": "\"binghamton new york\"",
       "engines": {
+        "tin": {
+          "conjunction": "binghamton AND new AND york",
+          "disjunction": "binghamton OR new OR york",
+          "phrase": "\"binghamton new york\""
+        },
         "paradedb": {
           "conjunction": "binghamton AND new AND york",
           "disjunction": "binghamton OR new OR york",
@@ -2102,6 +2462,11 @@
       "disjunction": "tallest OR trees OR in OR the OR world",
       "phrase": "\"tallest trees in the world\"",
       "engines": {
+        "tin": {
+          "conjunction": "tallest AND trees AND in AND the AND world",
+          "disjunction": "tallest OR trees OR in OR the OR world",
+          "phrase": "\"tallest trees in the world\""
+        },
         "paradedb": {
           "conjunction": "tallest AND trees AND in AND the AND world",
           "disjunction": "tallest OR trees OR in OR the OR world",
@@ -2131,6 +2496,11 @@
       "disjunction": "reading OR museum",
       "phrase": "\"reading museum\"",
       "engines": {
+        "tin": {
+          "conjunction": "reading AND museum",
+          "disjunction": "reading OR museum",
+          "phrase": "\"reading museum\""
+        },
         "paradedb": {
           "conjunction": "reading AND museum",
           "disjunction": "reading OR museum",
@@ -2160,6 +2530,11 @@
       "disjunction": "merry OR christmas",
       "phrase": "\"merry christmas\"",
       "engines": {
+        "tin": {
+          "conjunction": "merry AND christmas",
+          "disjunction": "merry OR christmas",
+          "phrase": "\"merry christmas\""
+        },
         "paradedb": {
           "conjunction": "merry AND christmas",
           "disjunction": "merry OR christmas",
@@ -2189,6 +2564,11 @@
       "disjunction": "flow OR meter",
       "phrase": "\"flow meter\"",
       "engines": {
+        "tin": {
+          "conjunction": "flow AND meter",
+          "disjunction": "flow OR meter",
+          "phrase": "\"flow meter\""
+        },
         "paradedb": {
           "conjunction": "flow AND meter",
           "disjunction": "flow OR meter",
@@ -2218,6 +2598,11 @@
       "disjunction": "famous OR quotes",
       "phrase": "\"famous quotes\"",
       "engines": {
+        "tin": {
+          "conjunction": "famous AND quotes",
+          "disjunction": "famous OR quotes",
+          "phrase": "\"famous quotes\""
+        },
         "paradedb": {
           "conjunction": "famous AND quotes",
           "disjunction": "famous OR quotes",
@@ -2247,6 +2632,11 @@
       "disjunction": "georgian OR architecture",
       "phrase": "\"georgian architecture\"",
       "engines": {
+        "tin": {
+          "conjunction": "georgian AND architecture",
+          "disjunction": "georgian OR architecture",
+          "phrase": "\"georgian architecture\""
+        },
         "paradedb": {
           "conjunction": "georgian AND architecture",
           "disjunction": "georgian OR architecture",
@@ -2276,6 +2666,11 @@
       "disjunction": "prayer OR times",
       "phrase": "\"prayer times\"",
       "engines": {
+        "tin": {
+          "conjunction": "prayer AND times",
+          "disjunction": "prayer OR times",
+          "phrase": "\"prayer times\""
+        },
         "paradedb": {
           "conjunction": "prayer AND times",
           "disjunction": "prayer OR times",
@@ -2305,6 +2700,11 @@
       "disjunction": "columbia OR university",
       "phrase": "\"columbia university\"",
       "engines": {
+        "tin": {
+          "conjunction": "columbia AND university",
+          "disjunction": "columbia OR university",
+          "phrase": "\"columbia university\""
+        },
         "paradedb": {
           "conjunction": "columbia AND university",
           "disjunction": "columbia OR university",
@@ -2334,6 +2734,11 @@
       "disjunction": "fluid OR power",
       "phrase": "\"fluid power\"",
       "engines": {
+        "tin": {
+          "conjunction": "fluid AND power",
+          "disjunction": "fluid OR power",
+          "phrase": "\"fluid power\""
+        },
         "paradedb": {
           "conjunction": "fluid AND power",
           "disjunction": "fluid OR power",
@@ -2363,6 +2768,11 @@
       "disjunction": "american OR south",
       "phrase": "\"american south\"",
       "engines": {
+        "tin": {
+          "conjunction": "american AND south",
+          "disjunction": "american OR south",
+          "phrase": "\"american south\""
+        },
         "paradedb": {
           "conjunction": "american AND south",
           "disjunction": "american OR south",
@@ -2392,6 +2802,11 @@
       "disjunction": "international OR baseball",
       "phrase": "\"international baseball\"",
       "engines": {
+        "tin": {
+          "conjunction": "international AND baseball",
+          "disjunction": "international OR baseball",
+          "phrase": "\"international baseball\""
+        },
         "paradedb": {
           "conjunction": "international AND baseball",
           "disjunction": "international OR baseball",
@@ -2421,6 +2836,11 @@
       "disjunction": "ace OR frehley",
       "phrase": "\"ace frehley\"",
       "engines": {
+        "tin": {
+          "conjunction": "ace AND frehley",
+          "disjunction": "ace OR frehley",
+          "phrase": "\"ace frehley\""
+        },
         "paradedb": {
           "conjunction": "ace AND frehley",
           "disjunction": "ace OR frehley",
@@ -2450,6 +2870,11 @@
       "disjunction": "the OR globe OR newspaper",
       "phrase": "\"the globe newspaper\"",
       "engines": {
+        "tin": {
+          "conjunction": "the AND globe AND newspaper",
+          "disjunction": "the OR globe OR newspaper",
+          "phrase": "\"the globe newspaper\""
+        },
         "paradedb": {
           "conjunction": "the AND globe AND newspaper",
           "disjunction": "the OR globe OR newspaper",
@@ -2479,6 +2904,11 @@
       "disjunction": "decorative OR windows",
       "phrase": "\"decorative windows\"",
       "engines": {
+        "tin": {
+          "conjunction": "decorative AND windows",
+          "disjunction": "decorative OR windows",
+          "phrase": "\"decorative windows\""
+        },
         "paradedb": {
           "conjunction": "decorative AND windows",
           "disjunction": "decorative OR windows",
@@ -2508,6 +2938,11 @@
       "disjunction": "ancient OR egypt",
       "phrase": "\"ancient egypt\"",
       "engines": {
+        "tin": {
+          "conjunction": "ancient AND egypt",
+          "disjunction": "ancient OR egypt",
+          "phrase": "\"ancient egypt\""
+        },
         "paradedb": {
           "conjunction": "ancient AND egypt",
           "disjunction": "ancient OR egypt",
@@ -2537,6 +2972,11 @@
       "disjunction": "american OR academy OR of OR child OR and OR adolescent OR psychiatry",
       "phrase": "\"american academy of child and adolescent psychiatry\"",
       "engines": {
+        "tin": {
+          "conjunction": "american AND academy AND of AND child AND and AND adolescent AND psychiatry",
+          "disjunction": "american OR academy OR of OR child OR and OR adolescent OR psychiatry",
+          "phrase": "\"american academy of child and adolescent psychiatry\""
+        },
         "paradedb": {
           "conjunction": "american AND academy AND of AND child AND and AND adolescent AND psychiatry",
           "disjunction": "american OR academy OR of OR child OR and OR adolescent OR psychiatry",
@@ -2566,6 +3006,11 @@
       "disjunction": "york OR photo",
       "phrase": "\"york photo\"",
       "engines": {
+        "tin": {
+          "conjunction": "york AND photo",
+          "disjunction": "york OR photo",
+          "phrase": "\"york photo\""
+        },
         "paradedb": {
           "conjunction": "york AND photo",
           "disjunction": "york OR photo",
@@ -2595,6 +3040,11 @@
       "disjunction": "good OR luck",
       "phrase": "\"good luck\"",
       "engines": {
+        "tin": {
+          "conjunction": "good AND luck",
+          "disjunction": "good OR luck",
+          "phrase": "\"good luck\""
+        },
         "paradedb": {
           "conjunction": "good AND luck",
           "disjunction": "good OR luck",
@@ -2624,6 +3074,11 @@
       "disjunction": "world OR bank OR president",
       "phrase": "\"world bank president\"",
       "engines": {
+        "tin": {
+          "conjunction": "world AND bank AND president",
+          "disjunction": "world OR bank OR president",
+          "phrase": "\"world bank president\""
+        },
         "paradedb": {
           "conjunction": "world AND bank AND president",
           "disjunction": "world OR bank OR president",
@@ -2653,6 +3108,11 @@
       "disjunction": "jonathan OR daniel",
       "phrase": "\"jonathan daniel\"",
       "engines": {
+        "tin": {
+          "conjunction": "jonathan AND daniel",
+          "disjunction": "jonathan OR daniel",
+          "phrase": "\"jonathan daniel\""
+        },
         "paradedb": {
           "conjunction": "jonathan AND daniel",
           "disjunction": "jonathan OR daniel",
@@ -2682,6 +3142,11 @@
       "disjunction": "clothing OR optional",
       "phrase": "\"clothing optional\"",
       "engines": {
+        "tin": {
+          "conjunction": "clothing AND optional",
+          "disjunction": "clothing OR optional",
+          "phrase": "\"clothing optional\""
+        },
         "paradedb": {
           "conjunction": "clothing AND optional",
           "disjunction": "clothing OR optional",
@@ -2711,6 +3176,11 @@
       "disjunction": "xena OR warrior OR princess",
       "phrase": "\"xena warrior princess\"",
       "engines": {
+        "tin": {
+          "conjunction": "xena AND warrior AND princess",
+          "disjunction": "xena OR warrior OR princess",
+          "phrase": "\"xena warrior princess\""
+        },
         "paradedb": {
           "conjunction": "xena AND warrior AND princess",
           "disjunction": "xena OR warrior OR princess",
@@ -2740,6 +3210,11 @@
       "disjunction": "time OR for OR kids",
       "phrase": "\"time for kids\"",
       "engines": {
+        "tin": {
+          "conjunction": "time AND for AND kids",
+          "disjunction": "time OR for OR kids",
+          "phrase": "\"time for kids\""
+        },
         "paradedb": {
           "conjunction": "time AND for AND kids",
           "disjunction": "time OR for OR kids",
@@ -2769,6 +3244,11 @@
       "disjunction": "tom OR welling",
       "phrase": "\"tom welling\"",
       "engines": {
+        "tin": {
+          "conjunction": "tom AND welling",
+          "disjunction": "tom OR welling",
+          "phrase": "\"tom welling\""
+        },
         "paradedb": {
           "conjunction": "tom AND welling",
           "disjunction": "tom OR welling",
@@ -2798,6 +3278,11 @@
       "disjunction": "elliott OR smith",
       "phrase": "\"elliott smith\"",
       "engines": {
+        "tin": {
+          "conjunction": "elliott AND smith",
+          "disjunction": "elliott OR smith",
+          "phrase": "\"elliott smith\""
+        },
         "paradedb": {
           "conjunction": "elliott AND smith",
           "disjunction": "elliott OR smith",
@@ -2827,6 +3312,11 @@
       "disjunction": "heart OR disease",
       "phrase": "\"heart disease\"",
       "engines": {
+        "tin": {
+          "conjunction": "heart AND disease",
+          "disjunction": "heart OR disease",
+          "phrase": "\"heart disease\""
+        },
         "paradedb": {
           "conjunction": "heart AND disease",
           "disjunction": "heart OR disease",
@@ -2856,6 +3346,11 @@
       "disjunction": "st OR petersburg OR high OR school",
       "phrase": "\"st petersburg high school\"",
       "engines": {
+        "tin": {
+          "conjunction": "st AND petersburg AND high AND school",
+          "disjunction": "st OR petersburg OR high OR school",
+          "phrase": "\"st petersburg high school\""
+        },
         "paradedb": {
           "conjunction": "st AND petersburg AND high AND school",
           "disjunction": "st OR petersburg OR high OR school",
@@ -2885,6 +3380,11 @@
       "disjunction": "fatherless OR children",
       "phrase": "\"fatherless children\"",
       "engines": {
+        "tin": {
+          "conjunction": "fatherless AND children",
+          "disjunction": "fatherless OR children",
+          "phrase": "\"fatherless children\""
+        },
         "paradedb": {
           "conjunction": "fatherless AND children",
           "disjunction": "fatherless OR children",
@@ -2914,6 +3414,11 @@
       "disjunction": "hotel OR del OR coronado",
       "phrase": "\"hotel del coronado\"",
       "engines": {
+        "tin": {
+          "conjunction": "hotel AND del AND coronado",
+          "disjunction": "hotel OR del OR coronado",
+          "phrase": "\"hotel del coronado\""
+        },
         "paradedb": {
           "conjunction": "hotel AND del AND coronado",
           "disjunction": "hotel OR del OR coronado",
@@ -2943,6 +3448,11 @@
       "disjunction": "law OR dictionary",
       "phrase": "\"law dictionary\"",
       "engines": {
+        "tin": {
+          "conjunction": "law AND dictionary",
+          "disjunction": "law OR dictionary",
+          "phrase": "\"law dictionary\""
+        },
         "paradedb": {
           "conjunction": "law AND dictionary",
           "disjunction": "law OR dictionary",
@@ -2972,6 +3482,11 @@
       "disjunction": "anderson OR hospital",
       "phrase": "\"anderson hospital\"",
       "engines": {
+        "tin": {
+          "conjunction": "anderson AND hospital",
+          "disjunction": "anderson OR hospital",
+          "phrase": "\"anderson hospital\""
+        },
         "paradedb": {
           "conjunction": "anderson AND hospital",
           "disjunction": "anderson OR hospital",
@@ -3001,6 +3516,11 @@
       "disjunction": "kenosha OR wisconsin",
       "phrase": "\"kenosha wisconsin\"",
       "engines": {
+        "tin": {
+          "conjunction": "kenosha AND wisconsin",
+          "disjunction": "kenosha OR wisconsin",
+          "phrase": "\"kenosha wisconsin\""
+        },
         "paradedb": {
           "conjunction": "kenosha AND wisconsin",
           "disjunction": "kenosha OR wisconsin",
@@ -3030,6 +3550,11 @@
       "disjunction": "false OR prophets",
       "phrase": "\"false prophets\"",
       "engines": {
+        "tin": {
+          "conjunction": "false AND prophets",
+          "disjunction": "false OR prophets",
+          "phrase": "\"false prophets\""
+        },
         "paradedb": {
           "conjunction": "false AND prophets",
           "disjunction": "false OR prophets",
@@ -3059,6 +3584,11 @@
       "disjunction": "cheap OR hotels",
       "phrase": "\"cheap hotels\"",
       "engines": {
+        "tin": {
+          "conjunction": "cheap AND hotels",
+          "disjunction": "cheap OR hotels",
+          "phrase": "\"cheap hotels\""
+        },
         "paradedb": {
           "conjunction": "cheap AND hotels",
           "disjunction": "cheap OR hotels",
@@ -3088,6 +3618,11 @@
       "disjunction": "walk OR the OR line",
       "phrase": "\"walk the line\"",
       "engines": {
+        "tin": {
+          "conjunction": "walk AND the AND line",
+          "disjunction": "walk OR the OR line",
+          "phrase": "\"walk the line\""
+        },
         "paradedb": {
           "conjunction": "walk AND the AND line",
           "disjunction": "walk OR the OR line",
@@ -3117,6 +3652,11 @@
       "disjunction": "missy OR elliott",
       "phrase": "\"missy elliott\"",
       "engines": {
+        "tin": {
+          "conjunction": "missy AND elliott",
+          "disjunction": "missy OR elliott",
+          "phrase": "\"missy elliott\""
+        },
         "paradedb": {
           "conjunction": "missy AND elliott",
           "disjunction": "missy OR elliott",
@@ -3146,6 +3686,11 @@
       "disjunction": "portrait OR studio",
       "phrase": "\"portrait studio\"",
       "engines": {
+        "tin": {
+          "conjunction": "portrait AND studio",
+          "disjunction": "portrait OR studio",
+          "phrase": "\"portrait studio\""
+        },
         "paradedb": {
           "conjunction": "portrait AND studio",
           "disjunction": "portrait OR studio",
@@ -3175,6 +3720,11 @@
       "disjunction": "calvin OR klein",
       "phrase": "\"calvin klein\"",
       "engines": {
+        "tin": {
+          "conjunction": "calvin AND klein",
+          "disjunction": "calvin OR klein",
+          "phrase": "\"calvin klein\""
+        },
         "paradedb": {
           "conjunction": "calvin AND klein",
           "disjunction": "calvin OR klein",
@@ -3204,6 +3754,11 @@
       "disjunction": "kitchen OR accessories",
       "phrase": "\"kitchen accessories\"",
       "engines": {
+        "tin": {
+          "conjunction": "kitchen AND accessories",
+          "disjunction": "kitchen OR accessories",
+          "phrase": "\"kitchen accessories\""
+        },
         "paradedb": {
           "conjunction": "kitchen AND accessories",
           "disjunction": "kitchen OR accessories",
@@ -3233,6 +3788,11 @@
       "disjunction": "consumer OR affairs",
       "phrase": "\"consumer affairs\"",
       "engines": {
+        "tin": {
+          "conjunction": "consumer AND affairs",
+          "disjunction": "consumer OR affairs",
+          "phrase": "\"consumer affairs\""
+        },
         "paradedb": {
           "conjunction": "consumer AND affairs",
           "disjunction": "consumer OR affairs",
@@ -3262,6 +3822,11 @@
       "disjunction": "adobe OR buildings",
       "phrase": "\"adobe buildings\"",
       "engines": {
+        "tin": {
+          "conjunction": "adobe AND buildings",
+          "disjunction": "adobe OR buildings",
+          "phrase": "\"adobe buildings\""
+        },
         "paradedb": {
           "conjunction": "adobe AND buildings",
           "disjunction": "adobe OR buildings",
@@ -3291,6 +3856,11 @@
       "disjunction": "national OR book OR award",
       "phrase": "\"national book award\"",
       "engines": {
+        "tin": {
+          "conjunction": "national AND book AND award",
+          "disjunction": "national OR book OR award",
+          "phrase": "\"national book award\""
+        },
         "paradedb": {
           "conjunction": "national AND book AND award",
           "disjunction": "national OR book OR award",
@@ -3320,6 +3890,11 @@
       "disjunction": "back OR surgery",
       "phrase": "\"back surgery\"",
       "engines": {
+        "tin": {
+          "conjunction": "back AND surgery",
+          "disjunction": "back OR surgery",
+          "phrase": "\"back surgery\""
+        },
         "paradedb": {
           "conjunction": "back AND surgery",
           "disjunction": "back OR surgery",
@@ -3349,6 +3924,11 @@
       "disjunction": "mid OR continent OR airport",
       "phrase": "\"mid continent airport\"",
       "engines": {
+        "tin": {
+          "conjunction": "mid AND continent AND airport",
+          "disjunction": "mid OR continent OR airport",
+          "phrase": "\"mid continent airport\""
+        },
         "paradedb": {
           "conjunction": "mid AND continent AND airport",
           "disjunction": "mid OR continent OR airport",
@@ -3378,6 +3958,11 @@
       "disjunction": "developmental OR delays",
       "phrase": "\"developmental delays\"",
       "engines": {
+        "tin": {
+          "conjunction": "developmental AND delays",
+          "disjunction": "developmental OR delays",
+          "phrase": "\"developmental delays\""
+        },
         "paradedb": {
           "conjunction": "developmental AND delays",
           "disjunction": "developmental OR delays",
@@ -3407,6 +3992,11 @@
       "disjunction": "elise OR neal",
       "phrase": "\"elise neal\"",
       "engines": {
+        "tin": {
+          "conjunction": "elise AND neal",
+          "disjunction": "elise OR neal",
+          "phrase": "\"elise neal\""
+        },
         "paradedb": {
           "conjunction": "elise AND neal",
           "disjunction": "elise OR neal",
@@ -3436,6 +4026,11 @@
       "disjunction": "canadian OR real OR estate",
       "phrase": "\"canadian real estate\"",
       "engines": {
+        "tin": {
+          "conjunction": "canadian AND real AND estate",
+          "disjunction": "canadian OR real OR estate",
+          "phrase": "\"canadian real estate\""
+        },
         "paradedb": {
           "conjunction": "canadian AND real AND estate",
           "disjunction": "canadian OR real OR estate",
@@ -3465,6 +4060,11 @@
       "disjunction": "barrett OR jackson",
       "phrase": "\"barrett jackson\"",
       "engines": {
+        "tin": {
+          "conjunction": "barrett AND jackson",
+          "disjunction": "barrett OR jackson",
+          "phrase": "\"barrett jackson\""
+        },
         "paradedb": {
           "conjunction": "barrett AND jackson",
           "disjunction": "barrett OR jackson",
@@ -3494,6 +4094,11 @@
       "disjunction": "bmw OR engines",
       "phrase": "\"bmw engines\"",
       "engines": {
+        "tin": {
+          "conjunction": "bmw AND engines",
+          "disjunction": "bmw OR engines",
+          "phrase": "\"bmw engines\""
+        },
         "paradedb": {
           "conjunction": "bmw AND engines",
           "disjunction": "bmw OR engines",
@@ -3523,6 +4128,11 @@
       "disjunction": "john OR donne",
       "phrase": "\"john donne\"",
       "engines": {
+        "tin": {
+          "conjunction": "john AND donne",
+          "disjunction": "john OR donne",
+          "phrase": "\"john donne\""
+        },
         "paradedb": {
           "conjunction": "john AND donne",
           "disjunction": "john OR donne",
@@ -3552,6 +4162,11 @@
       "disjunction": "evening OR wear",
       "phrase": "\"evening wear\"",
       "engines": {
+        "tin": {
+          "conjunction": "evening AND wear",
+          "disjunction": "evening OR wear",
+          "phrase": "\"evening wear\""
+        },
         "paradedb": {
           "conjunction": "evening AND wear",
           "disjunction": "evening OR wear",
@@ -3581,6 +4196,11 @@
       "disjunction": "toxic OR encephalopathy",
       "phrase": "\"toxic encephalopathy\"",
       "engines": {
+        "tin": {
+          "conjunction": "toxic AND encephalopathy",
+          "disjunction": "toxic OR encephalopathy",
+          "phrase": "\"toxic encephalopathy\""
+        },
         "paradedb": {
           "conjunction": "toxic AND encephalopathy",
           "disjunction": "toxic OR encephalopathy",
@@ -3610,6 +4230,11 @@
       "disjunction": "critical OR care OR nurse",
       "phrase": "\"critical care nurse\"",
       "engines": {
+        "tin": {
+          "conjunction": "critical AND care AND nurse",
+          "disjunction": "critical OR care OR nurse",
+          "phrase": "\"critical care nurse\""
+        },
         "paradedb": {
           "conjunction": "critical AND care AND nurse",
           "disjunction": "critical OR care OR nurse",
@@ -3639,6 +4264,11 @@
       "disjunction": "the OR breakfast OR club",
       "phrase": "\"the breakfast club\"",
       "engines": {
+        "tin": {
+          "conjunction": "the AND breakfast AND club",
+          "disjunction": "the OR breakfast OR club",
+          "phrase": "\"the breakfast club\""
+        },
         "paradedb": {
           "conjunction": "the AND breakfast AND club",
           "disjunction": "the OR breakfast OR club",
@@ -3668,6 +4298,11 @@
       "disjunction": "lost OR episode",
       "phrase": "\"lost episode\"",
       "engines": {
+        "tin": {
+          "conjunction": "lost AND episode",
+          "disjunction": "lost OR episode",
+          "phrase": "\"lost episode\""
+        },
         "paradedb": {
           "conjunction": "lost AND episode",
           "disjunction": "lost OR episode",
@@ -3697,6 +4332,11 @@
       "disjunction": "seal OR pictures",
       "phrase": "\"seal pictures\"",
       "engines": {
+        "tin": {
+          "conjunction": "seal AND pictures",
+          "disjunction": "seal OR pictures",
+          "phrase": "\"seal pictures\""
+        },
         "paradedb": {
           "conjunction": "seal AND pictures",
           "disjunction": "seal OR pictures",
@@ -3726,6 +4366,11 @@
       "disjunction": "critical OR care OR medicine",
       "phrase": "\"critical care medicine\"",
       "engines": {
+        "tin": {
+          "conjunction": "critical AND care AND medicine",
+          "disjunction": "critical OR care OR medicine",
+          "phrase": "\"critical care medicine\""
+        },
         "paradedb": {
           "conjunction": "critical AND care AND medicine",
           "disjunction": "critical OR care OR medicine",
@@ -3755,6 +4400,11 @@
       "disjunction": "hurricane OR wilma",
       "phrase": "\"hurricane wilma\"",
       "engines": {
+        "tin": {
+          "conjunction": "hurricane AND wilma",
+          "disjunction": "hurricane OR wilma",
+          "phrase": "\"hurricane wilma\""
+        },
         "paradedb": {
           "conjunction": "hurricane AND wilma",
           "disjunction": "hurricane OR wilma",
@@ -3784,6 +4434,11 @@
       "disjunction": "john OR wilkes OR booth",
       "phrase": "\"john wilkes booth\"",
       "engines": {
+        "tin": {
+          "conjunction": "john AND wilkes AND booth",
+          "disjunction": "john OR wilkes OR booth",
+          "phrase": "\"john wilkes booth\""
+        },
         "paradedb": {
           "conjunction": "john AND wilkes AND booth",
           "disjunction": "john OR wilkes OR booth",
@@ -3813,6 +4468,11 @@
       "disjunction": "sesame OR street",
       "phrase": "\"sesame street\"",
       "engines": {
+        "tin": {
+          "conjunction": "sesame AND street",
+          "disjunction": "sesame OR street",
+          "phrase": "\"sesame street\""
+        },
         "paradedb": {
           "conjunction": "sesame AND street",
           "disjunction": "sesame OR street",
@@ -3842,6 +4502,11 @@
       "disjunction": "ellen OR degeneres OR show",
       "phrase": "\"ellen degeneres show\"",
       "engines": {
+        "tin": {
+          "conjunction": "ellen AND degeneres AND show",
+          "disjunction": "ellen OR degeneres OR show",
+          "phrase": "\"ellen degeneres show\""
+        },
         "paradedb": {
           "conjunction": "ellen AND degeneres AND show",
           "disjunction": "ellen OR degeneres OR show",
@@ -3871,6 +4536,11 @@
       "disjunction": "jaguar OR x OR type",
       "phrase": "\"jaguar x type\"",
       "engines": {
+        "tin": {
+          "conjunction": "jaguar AND x AND type",
+          "disjunction": "jaguar OR x OR type",
+          "phrase": "\"jaguar x type\""
+        },
         "paradedb": {
           "conjunction": "jaguar AND x AND type",
           "disjunction": "jaguar OR x OR type",
@@ -3900,6 +4570,11 @@
       "disjunction": "the OR movement",
       "phrase": "\"the movement\"",
       "engines": {
+        "tin": {
+          "conjunction": "the AND movement",
+          "disjunction": "the OR movement",
+          "phrase": "\"the movement\""
+        },
         "paradedb": {
           "conjunction": "the AND movement",
           "disjunction": "the OR movement",
@@ -3929,6 +4604,11 @@
       "disjunction": "sarah OR fisher",
       "phrase": "\"sarah fisher\"",
       "engines": {
+        "tin": {
+          "conjunction": "sarah AND fisher",
+          "disjunction": "sarah OR fisher",
+          "phrase": "\"sarah fisher\""
+        },
         "paradedb": {
           "conjunction": "sarah AND fisher",
           "disjunction": "sarah OR fisher",
@@ -3958,6 +4638,11 @@
       "disjunction": "dexter OR michigan",
       "phrase": "\"dexter michigan\"",
       "engines": {
+        "tin": {
+          "conjunction": "dexter AND michigan",
+          "disjunction": "dexter OR michigan",
+          "phrase": "\"dexter michigan\""
+        },
         "paradedb": {
           "conjunction": "dexter AND michigan",
           "disjunction": "dexter OR michigan",
@@ -3987,6 +4672,11 @@
       "disjunction": "little OR brown OR jug",
       "phrase": "\"little brown jug\"",
       "engines": {
+        "tin": {
+          "conjunction": "little AND brown AND jug",
+          "disjunction": "little OR brown OR jug",
+          "phrase": "\"little brown jug\""
+        },
         "paradedb": {
           "conjunction": "little AND brown AND jug",
           "disjunction": "little OR brown OR jug",
@@ -4016,6 +4706,11 @@
       "disjunction": "books OR on OR cd",
       "phrase": "\"books on cd\"",
       "engines": {
+        "tin": {
+          "conjunction": "books AND on AND cd",
+          "disjunction": "books OR on OR cd",
+          "phrase": "\"books on cd\""
+        },
         "paradedb": {
           "conjunction": "books AND on AND cd",
           "disjunction": "books OR on OR cd",
@@ -4045,6 +4740,11 @@
       "disjunction": "carolyn OR jones",
       "phrase": "\"carolyn jones\"",
       "engines": {
+        "tin": {
+          "conjunction": "carolyn AND jones",
+          "disjunction": "carolyn OR jones",
+          "phrase": "\"carolyn jones\""
+        },
         "paradedb": {
           "conjunction": "carolyn AND jones",
           "disjunction": "carolyn OR jones",
@@ -4074,6 +4774,11 @@
       "disjunction": "aishwarya OR rai",
       "phrase": "\"aishwarya rai\"",
       "engines": {
+        "tin": {
+          "conjunction": "aishwarya AND rai",
+          "disjunction": "aishwarya OR rai",
+          "phrase": "\"aishwarya rai\""
+        },
         "paradedb": {
           "conjunction": "aishwarya AND rai",
           "disjunction": "aishwarya OR rai",
@@ -4103,6 +4808,11 @@
       "disjunction": "trendy OR clothes",
       "phrase": "\"trendy clothes\"",
       "engines": {
+        "tin": {
+          "conjunction": "trendy AND clothes",
+          "disjunction": "trendy OR clothes",
+          "phrase": "\"trendy clothes\""
+        },
         "paradedb": {
           "conjunction": "trendy AND clothes",
           "disjunction": "trendy OR clothes",
@@ -4132,6 +4842,11 @@
       "disjunction": "weather OR underground",
       "phrase": "\"weather underground\"",
       "engines": {
+        "tin": {
+          "conjunction": "weather AND underground",
+          "disjunction": "weather OR underground",
+          "phrase": "\"weather underground\""
+        },
         "paradedb": {
           "conjunction": "weather AND underground",
           "disjunction": "weather OR underground",
@@ -4161,6 +4876,11 @@
       "disjunction": "mercedes OR benz",
       "phrase": "\"mercedes benz\"",
       "engines": {
+        "tin": {
+          "conjunction": "mercedes AND benz",
+          "disjunction": "mercedes OR benz",
+          "phrase": "\"mercedes benz\""
+        },
         "paradedb": {
           "conjunction": "mercedes AND benz",
           "disjunction": "mercedes OR benz",
@@ -4190,6 +4910,11 @@
       "disjunction": "analog OR computer",
       "phrase": "\"analog computer\"",
       "engines": {
+        "tin": {
+          "conjunction": "analog AND computer",
+          "disjunction": "analog OR computer",
+          "phrase": "\"analog computer\""
+        },
         "paradedb": {
           "conjunction": "analog AND computer",
           "disjunction": "analog OR computer",
@@ -4219,6 +4944,11 @@
       "disjunction": "pump OR it OR up",
       "phrase": "\"pump it up\"",
       "engines": {
+        "tin": {
+          "conjunction": "pump AND it AND up",
+          "disjunction": "pump OR it OR up",
+          "phrase": "\"pump it up\""
+        },
         "paradedb": {
           "conjunction": "pump AND it AND up",
           "disjunction": "pump OR it OR up",
@@ -4248,6 +4978,11 @@
       "disjunction": "food OR carts",
       "phrase": "\"food carts\"",
       "engines": {
+        "tin": {
+          "conjunction": "food AND carts",
+          "disjunction": "food OR carts",
+          "phrase": "\"food carts\""
+        },
         "paradedb": {
           "conjunction": "food AND carts",
           "disjunction": "food OR carts",
@@ -4277,6 +5012,11 @@
       "disjunction": "graduate OR management OR admission OR test",
       "phrase": "\"graduate management admission test\"",
       "engines": {
+        "tin": {
+          "conjunction": "graduate AND management AND admission AND test",
+          "disjunction": "graduate OR management OR admission OR test",
+          "phrase": "\"graduate management admission test\""
+        },
         "paradedb": {
           "conjunction": "graduate AND management AND admission AND test",
           "disjunction": "graduate OR management OR admission OR test",
@@ -4306,6 +5046,11 @@
       "disjunction": "big OR boss OR man",
       "phrase": "\"big boss man\"",
       "engines": {
+        "tin": {
+          "conjunction": "big AND boss AND man",
+          "disjunction": "big OR boss OR man",
+          "phrase": "\"big boss man\""
+        },
         "paradedb": {
           "conjunction": "big AND boss AND man",
           "disjunction": "big OR boss OR man",
@@ -4335,6 +5080,11 @@
       "disjunction": "gun OR magazines",
       "phrase": "\"gun magazines\"",
       "engines": {
+        "tin": {
+          "conjunction": "gun AND magazines",
+          "disjunction": "gun OR magazines",
+          "phrase": "\"gun magazines\""
+        },
         "paradedb": {
           "conjunction": "gun AND magazines",
           "disjunction": "gun OR magazines",
@@ -4364,6 +5114,11 @@
       "disjunction": "bankruptcy OR laws",
       "phrase": "\"bankruptcy laws\"",
       "engines": {
+        "tin": {
+          "conjunction": "bankruptcy AND laws",
+          "disjunction": "bankruptcy OR laws",
+          "phrase": "\"bankruptcy laws\""
+        },
         "paradedb": {
           "conjunction": "bankruptcy AND laws",
           "disjunction": "bankruptcy OR laws",
@@ -4393,6 +5148,11 @@
       "disjunction": "antonio OR cromartie",
       "phrase": "\"antonio cromartie\"",
       "engines": {
+        "tin": {
+          "conjunction": "antonio AND cromartie",
+          "disjunction": "antonio OR cromartie",
+          "phrase": "\"antonio cromartie\""
+        },
         "paradedb": {
           "conjunction": "antonio AND cromartie",
           "disjunction": "antonio OR cromartie",
@@ -4422,6 +5182,11 @@
       "disjunction": "sky OR news",
       "phrase": "\"sky news\"",
       "engines": {
+        "tin": {
+          "conjunction": "sky AND news",
+          "disjunction": "sky OR news",
+          "phrase": "\"sky news\""
+        },
         "paradedb": {
           "conjunction": "sky AND news",
           "disjunction": "sky OR news",
@@ -4451,6 +5216,11 @@
       "disjunction": "phone OR cases",
       "phrase": "\"phone cases\"",
       "engines": {
+        "tin": {
+          "conjunction": "phone AND cases",
+          "disjunction": "phone OR cases",
+          "phrase": "\"phone cases\""
+        },
         "paradedb": {
           "conjunction": "phone AND cases",
           "disjunction": "phone OR cases",
@@ -4480,6 +5250,11 @@
       "disjunction": "the OR incredibles",
       "phrase": "\"the incredibles\"",
       "engines": {
+        "tin": {
+          "conjunction": "the AND incredibles",
+          "disjunction": "the OR incredibles",
+          "phrase": "\"the incredibles\""
+        },
         "paradedb": {
           "conjunction": "the AND incredibles",
           "disjunction": "the OR incredibles",
@@ -4509,6 +5284,11 @@
       "disjunction": "padre OR island",
       "phrase": "\"padre island\"",
       "engines": {
+        "tin": {
+          "conjunction": "padre AND island",
+          "disjunction": "padre OR island",
+          "phrase": "\"padre island\""
+        },
         "paradedb": {
           "conjunction": "padre AND island",
           "disjunction": "padre OR island",
@@ -4538,6 +5318,11 @@
       "disjunction": "worcester OR state OR college",
       "phrase": "\"worcester state college\"",
       "engines": {
+        "tin": {
+          "conjunction": "worcester AND state AND college",
+          "disjunction": "worcester OR state OR college",
+          "phrase": "\"worcester state college\""
+        },
         "paradedb": {
           "conjunction": "worcester AND state AND college",
           "disjunction": "worcester OR state OR college",
@@ -4567,6 +5352,11 @@
       "disjunction": "little OR cars",
       "phrase": "\"little cars\"",
       "engines": {
+        "tin": {
+          "conjunction": "little AND cars",
+          "disjunction": "little OR cars",
+          "phrase": "\"little cars\""
+        },
         "paradedb": {
           "conjunction": "little AND cars",
           "disjunction": "little OR cars",
@@ -4596,6 +5386,11 @@
       "disjunction": "jefferson OR davis OR high OR school",
       "phrase": "\"jefferson davis high school\"",
       "engines": {
+        "tin": {
+          "conjunction": "jefferson AND davis AND high AND school",
+          "disjunction": "jefferson OR davis OR high OR school",
+          "phrase": "\"jefferson davis high school\""
+        },
         "paradedb": {
           "conjunction": "jefferson AND davis AND high AND school",
           "disjunction": "jefferson OR davis OR high OR school",
@@ -4625,6 +5420,11 @@
       "disjunction": "game OR downloads",
       "phrase": "\"game downloads\"",
       "engines": {
+        "tin": {
+          "conjunction": "game AND downloads",
+          "disjunction": "game OR downloads",
+          "phrase": "\"game downloads\""
+        },
         "paradedb": {
           "conjunction": "game AND downloads",
           "disjunction": "game OR downloads",
@@ -4654,6 +5454,11 @@
       "disjunction": "chicken OR noodle OR soup",
       "phrase": "\"chicken noodle soup\"",
       "engines": {
+        "tin": {
+          "conjunction": "chicken AND noodle AND soup",
+          "disjunction": "chicken OR noodle OR soup",
+          "phrase": "\"chicken noodle soup\""
+        },
         "paradedb": {
           "conjunction": "chicken AND noodle AND soup",
           "disjunction": "chicken OR noodle OR soup",
@@ -4683,6 +5488,11 @@
       "disjunction": "music OR stands",
       "phrase": "\"music stands\"",
       "engines": {
+        "tin": {
+          "conjunction": "music AND stands",
+          "disjunction": "music OR stands",
+          "phrase": "\"music stands\""
+        },
         "paradedb": {
           "conjunction": "music AND stands",
           "disjunction": "music OR stands",
@@ -4712,6 +5522,11 @@
       "disjunction": "microsoft OR frontpage",
       "phrase": "\"microsoft frontpage\"",
       "engines": {
+        "tin": {
+          "conjunction": "microsoft AND frontpage",
+          "disjunction": "microsoft OR frontpage",
+          "phrase": "\"microsoft frontpage\""
+        },
         "paradedb": {
           "conjunction": "microsoft AND frontpage",
           "disjunction": "microsoft OR frontpage",
@@ -4741,6 +5556,11 @@
       "disjunction": "camp OR claiborne",
       "phrase": "\"camp claiborne\"",
       "engines": {
+        "tin": {
+          "conjunction": "camp AND claiborne",
+          "disjunction": "camp OR claiborne",
+          "phrase": "\"camp claiborne\""
+        },
         "paradedb": {
           "conjunction": "camp AND claiborne",
           "disjunction": "camp OR claiborne",
@@ -4770,6 +5590,11 @@
       "disjunction": "william OR wallace",
       "phrase": "\"william wallace\"",
       "engines": {
+        "tin": {
+          "conjunction": "william AND wallace",
+          "disjunction": "william OR wallace",
+          "phrase": "\"william wallace\""
+        },
         "paradedb": {
           "conjunction": "william AND wallace",
           "disjunction": "william OR wallace",
@@ -4799,6 +5624,11 @@
       "disjunction": "home OR loan",
       "phrase": "\"home loan\"",
       "engines": {
+        "tin": {
+          "conjunction": "home AND loan",
+          "disjunction": "home OR loan",
+          "phrase": "\"home loan\""
+        },
         "paradedb": {
           "conjunction": "home AND loan",
           "disjunction": "home OR loan",
@@ -4828,6 +5658,11 @@
       "disjunction": "cherry OR blossom",
       "phrase": "\"cherry blossom\"",
       "engines": {
+        "tin": {
+          "conjunction": "cherry AND blossom",
+          "disjunction": "cherry OR blossom",
+          "phrase": "\"cherry blossom\""
+        },
         "paradedb": {
           "conjunction": "cherry AND blossom",
           "disjunction": "cherry OR blossom",
@@ -4857,6 +5692,11 @@
       "disjunction": "miami OR dade OR college",
       "phrase": "\"miami dade college\"",
       "engines": {
+        "tin": {
+          "conjunction": "miami AND dade AND college",
+          "disjunction": "miami OR dade OR college",
+          "phrase": "\"miami dade college\""
+        },
         "paradedb": {
           "conjunction": "miami AND dade AND college",
           "disjunction": "miami OR dade OR college",
@@ -4886,6 +5726,11 @@
       "disjunction": "time OR in OR denver",
       "phrase": "\"time in denver\"",
       "engines": {
+        "tin": {
+          "conjunction": "time AND in AND denver",
+          "disjunction": "time OR in OR denver",
+          "phrase": "\"time in denver\""
+        },
         "paradedb": {
           "conjunction": "time AND in AND denver",
           "disjunction": "time OR in OR denver",
@@ -4915,6 +5760,11 @@
       "disjunction": "naked OR news",
       "phrase": "\"naked news\"",
       "engines": {
+        "tin": {
+          "conjunction": "naked AND news",
+          "disjunction": "naked OR news",
+          "phrase": "\"naked news\""
+        },
         "paradedb": {
           "conjunction": "naked AND news",
           "disjunction": "naked OR news",
@@ -4944,6 +5794,11 @@
       "disjunction": "wildlife OR photography",
       "phrase": "\"wildlife photography\"",
       "engines": {
+        "tin": {
+          "conjunction": "wildlife AND photography",
+          "disjunction": "wildlife OR photography",
+          "phrase": "\"wildlife photography\""
+        },
         "paradedb": {
           "conjunction": "wildlife AND photography",
           "disjunction": "wildlife OR photography",
@@ -4973,6 +5828,11 @@
       "disjunction": "david OR kim",
       "phrase": "\"david kim\"",
       "engines": {
+        "tin": {
+          "conjunction": "david AND kim",
+          "disjunction": "david OR kim",
+          "phrase": "\"david kim\""
+        },
         "paradedb": {
           "conjunction": "david AND kim",
           "disjunction": "david OR kim",
@@ -5002,6 +5862,11 @@
       "disjunction": "printer OR ink",
       "phrase": "\"printer ink\"",
       "engines": {
+        "tin": {
+          "conjunction": "printer AND ink",
+          "disjunction": "printer OR ink",
+          "phrase": "\"printer ink\""
+        },
         "paradedb": {
           "conjunction": "printer AND ink",
           "disjunction": "printer OR ink",
@@ -5031,6 +5896,11 @@
       "disjunction": "all OR funds",
       "phrase": "\"all funds\"",
       "engines": {
+        "tin": {
+          "conjunction": "all AND funds",
+          "disjunction": "all OR funds",
+          "phrase": "\"all funds\""
+        },
         "paradedb": {
           "conjunction": "all AND funds",
           "disjunction": "all OR funds",
@@ -5060,6 +5930,11 @@
       "disjunction": "zion OR national OR park",
       "phrase": "\"zion national park\"",
       "engines": {
+        "tin": {
+          "conjunction": "zion AND national AND park",
+          "disjunction": "zion OR national OR park",
+          "phrase": "\"zion national park\""
+        },
         "paradedb": {
           "conjunction": "zion AND national AND park",
           "disjunction": "zion OR national OR park",
@@ -5089,6 +5964,11 @@
       "disjunction": "john OR klein",
       "phrase": "\"john klein\"",
       "engines": {
+        "tin": {
+          "conjunction": "john AND klein",
+          "disjunction": "john OR klein",
+          "phrase": "\"john klein\""
+        },
         "paradedb": {
           "conjunction": "john AND klein",
           "disjunction": "john OR klein",
@@ -5118,6 +5998,11 @@
       "disjunction": "edith OR wharton",
       "phrase": "\"edith wharton\"",
       "engines": {
+        "tin": {
+          "conjunction": "edith AND wharton",
+          "disjunction": "edith OR wharton",
+          "phrase": "\"edith wharton\""
+        },
         "paradedb": {
           "conjunction": "edith AND wharton",
           "disjunction": "edith OR wharton",
@@ -5147,6 +6032,11 @@
       "disjunction": "times OR union",
       "phrase": "\"times union\"",
       "engines": {
+        "tin": {
+          "conjunction": "times AND union",
+          "disjunction": "times OR union",
+          "phrase": "\"times union\""
+        },
         "paradedb": {
           "conjunction": "times AND union",
           "disjunction": "times OR union",
@@ -5176,6 +6066,11 @@
       "disjunction": "milan OR tennessee",
       "phrase": "\"milan tennessee\"",
       "engines": {
+        "tin": {
+          "conjunction": "milan AND tennessee",
+          "disjunction": "milan OR tennessee",
+          "phrase": "\"milan tennessee\""
+        },
         "paradedb": {
           "conjunction": "milan AND tennessee",
           "disjunction": "milan OR tennessee",
@@ -5205,6 +6100,11 @@
       "disjunction": "western OR herald",
       "phrase": "\"western herald\"",
       "engines": {
+        "tin": {
+          "conjunction": "western AND herald",
+          "disjunction": "western OR herald",
+          "phrase": "\"western herald\""
+        },
         "paradedb": {
           "conjunction": "western AND herald",
           "disjunction": "western OR herald",
@@ -5234,6 +6134,11 @@
       "disjunction": "care OR a OR lot",
       "phrase": "\"care a lot\"",
       "engines": {
+        "tin": {
+          "conjunction": "care AND a AND lot",
+          "disjunction": "care OR a OR lot",
+          "phrase": "\"care a lot\""
+        },
         "paradedb": {
           "conjunction": "care AND a AND lot",
           "disjunction": "care OR a OR lot",
@@ -5263,6 +6168,11 @@
       "disjunction": "costume OR designers",
       "phrase": "\"costume designers\"",
       "engines": {
+        "tin": {
+          "conjunction": "costume AND designers",
+          "disjunction": "costume OR designers",
+          "phrase": "\"costume designers\""
+        },
         "paradedb": {
           "conjunction": "costume AND designers",
           "disjunction": "costume OR designers",
@@ -5292,6 +6202,11 @@
       "disjunction": "the OR actors OR studio",
       "phrase": "\"the actors studio\"",
       "engines": {
+        "tin": {
+          "conjunction": "the AND actors AND studio",
+          "disjunction": "the OR actors OR studio",
+          "phrase": "\"the actors studio\""
+        },
         "paradedb": {
           "conjunction": "the AND actors AND studio",
           "disjunction": "the OR actors OR studio",
@@ -5321,6 +6236,11 @@
       "disjunction": "personal OR chef",
       "phrase": "\"personal chef\"",
       "engines": {
+        "tin": {
+          "conjunction": "personal AND chef",
+          "disjunction": "personal OR chef",
+          "phrase": "\"personal chef\""
+        },
         "paradedb": {
           "conjunction": "personal AND chef",
           "disjunction": "personal OR chef",
@@ -5350,6 +6270,11 @@
       "disjunction": "david OR koresh",
       "phrase": "\"david koresh\"",
       "engines": {
+        "tin": {
+          "conjunction": "david AND koresh",
+          "disjunction": "david OR koresh",
+          "phrase": "\"david koresh\""
+        },
         "paradedb": {
           "conjunction": "david AND koresh",
           "disjunction": "david OR koresh",
@@ -5379,6 +6304,11 @@
       "disjunction": "bismarck OR state OR college",
       "phrase": "\"bismarck state college\"",
       "engines": {
+        "tin": {
+          "conjunction": "bismarck AND state AND college",
+          "disjunction": "bismarck OR state OR college",
+          "phrase": "\"bismarck state college\""
+        },
         "paradedb": {
           "conjunction": "bismarck AND state AND college",
           "disjunction": "bismarck OR state OR college",
@@ -5408,6 +6338,11 @@
       "disjunction": "the OR oregonian OR newspaper",
       "phrase": "\"the oregonian newspaper\"",
       "engines": {
+        "tin": {
+          "conjunction": "the AND oregonian AND newspaper",
+          "disjunction": "the OR oregonian OR newspaper",
+          "phrase": "\"the oregonian newspaper\""
+        },
         "paradedb": {
           "conjunction": "the AND oregonian AND newspaper",
           "disjunction": "the OR oregonian OR newspaper",
@@ -5437,6 +6372,11 @@
       "disjunction": "justin OR timberlake",
       "phrase": "\"justin timberlake\"",
       "engines": {
+        "tin": {
+          "conjunction": "justin AND timberlake",
+          "disjunction": "justin OR timberlake",
+          "phrase": "\"justin timberlake\""
+        },
         "paradedb": {
           "conjunction": "justin AND timberlake",
           "disjunction": "justin OR timberlake",
@@ -5466,6 +6406,11 @@
       "disjunction": "hawk OR mountain",
       "phrase": "\"hawk mountain\"",
       "engines": {
+        "tin": {
+          "conjunction": "hawk AND mountain",
+          "disjunction": "hawk OR mountain",
+          "phrase": "\"hawk mountain\""
+        },
         "paradedb": {
           "conjunction": "hawk AND mountain",
           "disjunction": "hawk OR mountain",
@@ -5495,6 +6440,11 @@
       "disjunction": "kristanna OR loken",
       "phrase": "\"kristanna loken\"",
       "engines": {
+        "tin": {
+          "conjunction": "kristanna AND loken",
+          "disjunction": "kristanna OR loken",
+          "phrase": "\"kristanna loken\""
+        },
         "paradedb": {
           "conjunction": "kristanna AND loken",
           "disjunction": "kristanna OR loken",
@@ -5524,6 +6474,11 @@
       "disjunction": "chicago OR teachers OR union",
       "phrase": "\"chicago teachers union\"",
       "engines": {
+        "tin": {
+          "conjunction": "chicago AND teachers AND union",
+          "disjunction": "chicago OR teachers OR union",
+          "phrase": "\"chicago teachers union\""
+        },
         "paradedb": {
           "conjunction": "chicago AND teachers AND union",
           "disjunction": "chicago OR teachers OR union",
@@ -5553,6 +6508,11 @@
       "disjunction": "connecticut OR historical OR society",
       "phrase": "\"connecticut historical society\"",
       "engines": {
+        "tin": {
+          "conjunction": "connecticut AND historical AND society",
+          "disjunction": "connecticut OR historical OR society",
+          "phrase": "\"connecticut historical society\""
+        },
         "paradedb": {
           "conjunction": "connecticut AND historical AND society",
           "disjunction": "connecticut OR historical OR society",
@@ -5582,6 +6542,11 @@
       "disjunction": "shih OR tzu",
       "phrase": "\"shih tzu\"",
       "engines": {
+        "tin": {
+          "conjunction": "shih AND tzu",
+          "disjunction": "shih OR tzu",
+          "phrase": "\"shih tzu\""
+        },
         "paradedb": {
           "conjunction": "shih AND tzu",
           "disjunction": "shih OR tzu",
@@ -5611,6 +6576,11 @@
       "disjunction": "robert OR fuller",
       "phrase": "\"robert fuller\"",
       "engines": {
+        "tin": {
+          "conjunction": "robert AND fuller",
+          "disjunction": "robert OR fuller",
+          "phrase": "\"robert fuller\""
+        },
         "paradedb": {
           "conjunction": "robert AND fuller",
           "disjunction": "robert OR fuller",
@@ -5640,6 +6610,11 @@
       "disjunction": "zip OR code",
       "phrase": "\"zip code\"",
       "engines": {
+        "tin": {
+          "conjunction": "zip AND code",
+          "disjunction": "zip OR code",
+          "phrase": "\"zip code\""
+        },
         "paradedb": {
           "conjunction": "zip AND code",
           "disjunction": "zip OR code",
@@ -5669,6 +6644,11 @@
       "disjunction": "bass OR fishing",
       "phrase": "\"bass fishing\"",
       "engines": {
+        "tin": {
+          "conjunction": "bass AND fishing",
+          "disjunction": "bass OR fishing",
+          "phrase": "\"bass fishing\""
+        },
         "paradedb": {
           "conjunction": "bass AND fishing",
           "disjunction": "bass OR fishing",
@@ -5698,6 +6678,11 @@
       "disjunction": "ford OR parts",
       "phrase": "\"ford parts\"",
       "engines": {
+        "tin": {
+          "conjunction": "ford AND parts",
+          "disjunction": "ford OR parts",
+          "phrase": "\"ford parts\""
+        },
         "paradedb": {
           "conjunction": "ford AND parts",
           "disjunction": "ford OR parts",
@@ -5727,6 +6712,11 @@
       "disjunction": "automatic OR writing",
       "phrase": "\"automatic writing\"",
       "engines": {
+        "tin": {
+          "conjunction": "automatic AND writing",
+          "disjunction": "automatic OR writing",
+          "phrase": "\"automatic writing\""
+        },
         "paradedb": {
           "conjunction": "automatic AND writing",
           "disjunction": "automatic OR writing",
@@ -5756,6 +6746,11 @@
       "disjunction": "roundabout OR theatre",
       "phrase": "\"roundabout theatre\"",
       "engines": {
+        "tin": {
+          "conjunction": "roundabout AND theatre",
+          "disjunction": "roundabout OR theatre",
+          "phrase": "\"roundabout theatre\""
+        },
         "paradedb": {
           "conjunction": "roundabout AND theatre",
           "disjunction": "roundabout OR theatre",
@@ -5785,6 +6780,11 @@
       "disjunction": "table OR lamps",
       "phrase": "\"table lamps\"",
       "engines": {
+        "tin": {
+          "conjunction": "table AND lamps",
+          "disjunction": "table OR lamps",
+          "phrase": "\"table lamps\""
+        },
         "paradedb": {
           "conjunction": "table AND lamps",
           "disjunction": "table OR lamps",
@@ -5814,6 +6814,11 @@
       "disjunction": "the OR garden OR of OR eden",
       "phrase": "\"the garden of eden\"",
       "engines": {
+        "tin": {
+          "conjunction": "the AND garden AND of AND eden",
+          "disjunction": "the OR garden OR of OR eden",
+          "phrase": "\"the garden of eden\""
+        },
         "paradedb": {
           "conjunction": "the AND garden AND of AND eden",
           "disjunction": "the OR garden OR of OR eden",
@@ -5843,6 +6848,11 @@
       "disjunction": "immigration OR to OR mexico",
       "phrase": "\"immigration to mexico\"",
       "engines": {
+        "tin": {
+          "conjunction": "immigration AND to AND mexico",
+          "disjunction": "immigration OR to OR mexico",
+          "phrase": "\"immigration to mexico\""
+        },
         "paradedb": {
           "conjunction": "immigration AND to AND mexico",
           "disjunction": "immigration OR to OR mexico",
@@ -5872,6 +6882,11 @@
       "disjunction": "the OR daily OR breeze",
       "phrase": "\"the daily breeze\"",
       "engines": {
+        "tin": {
+          "conjunction": "the AND daily AND breeze",
+          "disjunction": "the OR daily OR breeze",
+          "phrase": "\"the daily breeze\""
+        },
         "paradedb": {
           "conjunction": "the AND daily AND breeze",
           "disjunction": "the OR daily OR breeze",
@@ -5901,6 +6916,11 @@
       "disjunction": "debra OR jo OR rupp",
       "phrase": "\"debra jo rupp\"",
       "engines": {
+        "tin": {
+          "conjunction": "debra AND jo AND rupp",
+          "disjunction": "debra OR jo OR rupp",
+          "phrase": "\"debra jo rupp\""
+        },
         "paradedb": {
           "conjunction": "debra AND jo AND rupp",
           "disjunction": "debra OR jo OR rupp",
@@ -5930,6 +6950,11 @@
       "disjunction": "term OR life OR insurance",
       "phrase": "\"term life insurance\"",
       "engines": {
+        "tin": {
+          "conjunction": "term AND life AND insurance",
+          "disjunction": "term OR life OR insurance",
+          "phrase": "\"term life insurance\""
+        },
         "paradedb": {
           "conjunction": "term AND life AND insurance",
           "disjunction": "term OR life OR insurance",
@@ -5959,6 +6984,11 @@
       "disjunction": "tennis OR elbow",
       "phrase": "\"tennis elbow\"",
       "engines": {
+        "tin": {
+          "conjunction": "tennis AND elbow",
+          "disjunction": "tennis OR elbow",
+          "phrase": "\"tennis elbow\""
+        },
         "paradedb": {
           "conjunction": "tennis AND elbow",
           "disjunction": "tennis OR elbow",
@@ -5988,6 +7018,11 @@
       "disjunction": "kidney OR transplant",
       "phrase": "\"kidney transplant\"",
       "engines": {
+        "tin": {
+          "conjunction": "kidney AND transplant",
+          "disjunction": "kidney OR transplant",
+          "phrase": "\"kidney transplant\""
+        },
         "paradedb": {
           "conjunction": "kidney AND transplant",
           "disjunction": "kidney OR transplant",
@@ -6017,6 +7052,11 @@
       "disjunction": "us OR coast OR guard",
       "phrase": "\"us coast guard\"",
       "engines": {
+        "tin": {
+          "conjunction": "us AND coast AND guard",
+          "disjunction": "us OR coast OR guard",
+          "phrase": "\"us coast guard\""
+        },
         "paradedb": {
           "conjunction": "us AND coast AND guard",
           "disjunction": "us OR coast OR guard",
@@ -6046,6 +7086,11 @@
       "disjunction": "car OR stereo",
       "phrase": "\"car stereo\"",
       "engines": {
+        "tin": {
+          "conjunction": "car AND stereo",
+          "disjunction": "car OR stereo",
+          "phrase": "\"car stereo\""
+        },
         "paradedb": {
           "conjunction": "car AND stereo",
           "disjunction": "car OR stereo",
@@ -6075,6 +7120,11 @@
       "disjunction": "playa OR del OR rey",
       "phrase": "\"playa del rey\"",
       "engines": {
+        "tin": {
+          "conjunction": "playa AND del AND rey",
+          "disjunction": "playa OR del OR rey",
+          "phrase": "\"playa del rey\""
+        },
         "paradedb": {
           "conjunction": "playa AND del AND rey",
           "disjunction": "playa OR del OR rey",
@@ -6104,6 +7154,11 @@
       "disjunction": "domain OR names",
       "phrase": "\"domain names\"",
       "engines": {
+        "tin": {
+          "conjunction": "domain AND names",
+          "disjunction": "domain OR names",
+          "phrase": "\"domain names\""
+        },
         "paradedb": {
           "conjunction": "domain AND names",
           "disjunction": "domain OR names",
@@ -6133,6 +7188,11 @@
       "disjunction": "premier OR wine",
       "phrase": "\"premier wine\"",
       "engines": {
+        "tin": {
+          "conjunction": "premier AND wine",
+          "disjunction": "premier OR wine",
+          "phrase": "\"premier wine\""
+        },
         "paradedb": {
           "conjunction": "premier AND wine",
           "disjunction": "premier OR wine",
@@ -6162,6 +7222,11 @@
       "disjunction": "too OR faced",
       "phrase": "\"too faced\"",
       "engines": {
+        "tin": {
+          "conjunction": "too AND faced",
+          "disjunction": "too OR faced",
+          "phrase": "\"too faced\""
+        },
         "paradedb": {
           "conjunction": "too AND faced",
           "disjunction": "too OR faced",
@@ -6191,6 +7256,11 @@
       "disjunction": "avon OR school",
       "phrase": "\"avon school\"",
       "engines": {
+        "tin": {
+          "conjunction": "avon AND school",
+          "disjunction": "avon OR school",
+          "phrase": "\"avon school\""
+        },
         "paradedb": {
           "conjunction": "avon AND school",
           "disjunction": "avon OR school",
@@ -6220,6 +7290,11 @@
       "disjunction": "jungle OR boy",
       "phrase": "\"jungle boy\"",
       "engines": {
+        "tin": {
+          "conjunction": "jungle AND boy",
+          "disjunction": "jungle OR boy",
+          "phrase": "\"jungle boy\""
+        },
         "paradedb": {
           "conjunction": "jungle AND boy",
           "disjunction": "jungle OR boy",
@@ -6249,6 +7324,11 @@
       "disjunction": "ventura OR college",
       "phrase": "\"ventura college\"",
       "engines": {
+        "tin": {
+          "conjunction": "ventura AND college",
+          "disjunction": "ventura OR college",
+          "phrase": "\"ventura college\""
+        },
         "paradedb": {
           "conjunction": "ventura AND college",
           "disjunction": "ventura OR college",
@@ -6278,6 +7358,11 @@
       "disjunction": "kansas OR city OR kings",
       "phrase": "\"kansas city kings\"",
       "engines": {
+        "tin": {
+          "conjunction": "kansas AND city AND kings",
+          "disjunction": "kansas OR city OR kings",
+          "phrase": "\"kansas city kings\""
+        },
         "paradedb": {
           "conjunction": "kansas AND city AND kings",
           "disjunction": "kansas OR city OR kings",
@@ -6307,6 +7392,11 @@
       "disjunction": "new OR haven",
       "phrase": "\"new haven\"",
       "engines": {
+        "tin": {
+          "conjunction": "new AND haven",
+          "disjunction": "new OR haven",
+          "phrase": "\"new haven\""
+        },
         "paradedb": {
           "conjunction": "new AND haven",
           "disjunction": "new OR haven",
@@ -6336,6 +7426,11 @@
       "disjunction": "ron OR keel",
       "phrase": "\"ron keel\"",
       "engines": {
+        "tin": {
+          "conjunction": "ron AND keel",
+          "disjunction": "ron OR keel",
+          "phrase": "\"ron keel\""
+        },
         "paradedb": {
           "conjunction": "ron AND keel",
           "disjunction": "ron OR keel",
@@ -6365,6 +7460,11 @@
       "disjunction": "business OR consultants",
       "phrase": "\"business consultants\"",
       "engines": {
+        "tin": {
+          "conjunction": "business AND consultants",
+          "disjunction": "business OR consultants",
+          "phrase": "\"business consultants\""
+        },
         "paradedb": {
           "conjunction": "business AND consultants",
           "disjunction": "business OR consultants",
@@ -6394,6 +7494,11 @@
       "disjunction": "open OR source OR software",
       "phrase": "\"open source software\"",
       "engines": {
+        "tin": {
+          "conjunction": "open AND source AND software",
+          "disjunction": "open OR source OR software",
+          "phrase": "\"open source software\""
+        },
         "paradedb": {
           "conjunction": "open AND source AND software",
           "disjunction": "open OR source OR software",
@@ -6423,6 +7528,11 @@
       "disjunction": "ambassador OR of OR italy",
       "phrase": "\"ambassador of italy\"",
       "engines": {
+        "tin": {
+          "conjunction": "ambassador AND of AND italy",
+          "disjunction": "ambassador OR of OR italy",
+          "phrase": "\"ambassador of italy\""
+        },
         "paradedb": {
           "conjunction": "ambassador AND of AND italy",
           "disjunction": "ambassador OR of OR italy",
@@ -6452,6 +7562,11 @@
       "disjunction": "los OR angeles OR daily OR news",
       "phrase": "\"los angeles daily news\"",
       "engines": {
+        "tin": {
+          "conjunction": "los AND angeles AND daily AND news",
+          "disjunction": "los OR angeles OR daily OR news",
+          "phrase": "\"los angeles daily news\""
+        },
         "paradedb": {
           "conjunction": "los AND angeles AND daily AND news",
           "disjunction": "los OR angeles OR daily OR news",
@@ -6481,6 +7596,11 @@
       "disjunction": "napa OR auto OR parts",
       "phrase": "\"napa auto parts\"",
       "engines": {
+        "tin": {
+          "conjunction": "napa AND auto AND parts",
+          "disjunction": "napa OR auto OR parts",
+          "phrase": "\"napa auto parts\""
+        },
         "paradedb": {
           "conjunction": "napa AND auto AND parts",
           "disjunction": "napa OR auto OR parts",
@@ -6510,6 +7630,11 @@
       "disjunction": "law OR school OR rankings",
       "phrase": "\"law school rankings\"",
       "engines": {
+        "tin": {
+          "conjunction": "law AND school AND rankings",
+          "disjunction": "law OR school OR rankings",
+          "phrase": "\"law school rankings\""
+        },
         "paradedb": {
           "conjunction": "law AND school AND rankings",
           "disjunction": "law OR school OR rankings",
@@ -6539,6 +7664,11 @@
       "disjunction": "hsbc OR bank",
       "phrase": "\"hsbc bank\"",
       "engines": {
+        "tin": {
+          "conjunction": "hsbc AND bank",
+          "disjunction": "hsbc OR bank",
+          "phrase": "\"hsbc bank\""
+        },
         "paradedb": {
           "conjunction": "hsbc AND bank",
           "disjunction": "hsbc OR bank",
@@ -6568,6 +7698,11 @@
       "disjunction": "cognitive OR impairment",
       "phrase": "\"cognitive impairment\"",
       "engines": {
+        "tin": {
+          "conjunction": "cognitive AND impairment",
+          "disjunction": "cognitive OR impairment",
+          "phrase": "\"cognitive impairment\""
+        },
         "paradedb": {
           "conjunction": "cognitive AND impairment",
           "disjunction": "cognitive OR impairment",
@@ -6597,6 +7732,11 @@
       "disjunction": "mushroom OR kingdom",
       "phrase": "\"mushroom kingdom\"",
       "engines": {
+        "tin": {
+          "conjunction": "mushroom AND kingdom",
+          "disjunction": "mushroom OR kingdom",
+          "phrase": "\"mushroom kingdom\""
+        },
         "paradedb": {
           "conjunction": "mushroom AND kingdom",
           "disjunction": "mushroom OR kingdom",
@@ -6626,6 +7766,11 @@
       "disjunction": "the OR progressive",
       "phrase": "\"the progressive\"",
       "engines": {
+        "tin": {
+          "conjunction": "the AND progressive",
+          "disjunction": "the OR progressive",
+          "phrase": "\"the progressive\""
+        },
         "paradedb": {
           "conjunction": "the AND progressive",
           "disjunction": "the OR progressive",
@@ -6655,6 +7800,11 @@
       "disjunction": "mood OR swings",
       "phrase": "\"mood swings\"",
       "engines": {
+        "tin": {
+          "conjunction": "mood AND swings",
+          "disjunction": "mood OR swings",
+          "phrase": "\"mood swings\""
+        },
         "paradedb": {
           "conjunction": "mood AND swings",
           "disjunction": "mood OR swings",
@@ -6684,6 +7834,11 @@
       "disjunction": "ugly OR people",
       "phrase": "\"ugly people\"",
       "engines": {
+        "tin": {
+          "conjunction": "ugly AND people",
+          "disjunction": "ugly OR people",
+          "phrase": "\"ugly people\""
+        },
         "paradedb": {
           "conjunction": "ugly AND people",
           "disjunction": "ugly OR people",
@@ -6713,6 +7868,11 @@
       "disjunction": "little OR shop OR of OR horrors",
       "phrase": "\"little shop of horrors\"",
       "engines": {
+        "tin": {
+          "conjunction": "little AND shop AND of AND horrors",
+          "disjunction": "little OR shop OR of OR horrors",
+          "phrase": "\"little shop of horrors\""
+        },
         "paradedb": {
           "conjunction": "little AND shop AND of AND horrors",
           "disjunction": "little OR shop OR of OR horrors",
@@ -6742,6 +7902,11 @@
       "disjunction": "abilene OR tx",
       "phrase": "\"abilene tx\"",
       "engines": {
+        "tin": {
+          "conjunction": "abilene AND tx",
+          "disjunction": "abilene OR tx",
+          "phrase": "\"abilene tx\""
+        },
         "paradedb": {
           "conjunction": "abilene AND tx",
           "disjunction": "abilene OR tx",
@@ -6771,6 +7936,11 @@
       "disjunction": "internet OR fraud",
       "phrase": "\"internet fraud\"",
       "engines": {
+        "tin": {
+          "conjunction": "internet AND fraud",
+          "disjunction": "internet OR fraud",
+          "phrase": "\"internet fraud\""
+        },
         "paradedb": {
           "conjunction": "internet AND fraud",
           "disjunction": "internet OR fraud",
@@ -6800,6 +7970,11 @@
       "disjunction": "tv OR party",
       "phrase": "\"tv party\"",
       "engines": {
+        "tin": {
+          "conjunction": "tv AND party",
+          "disjunction": "tv OR party",
+          "phrase": "\"tv party\""
+        },
         "paradedb": {
           "conjunction": "tv AND party",
           "disjunction": "tv OR party",
@@ -6829,6 +8004,11 @@
       "disjunction": "new OR jersey OR police",
       "phrase": "\"new jersey police\"",
       "engines": {
+        "tin": {
+          "conjunction": "new AND jersey AND police",
+          "disjunction": "new OR jersey OR police",
+          "phrase": "\"new jersey police\""
+        },
         "paradedb": {
           "conjunction": "new AND jersey AND police",
           "disjunction": "new OR jersey OR police",
@@ -6858,6 +8038,11 @@
       "disjunction": "university OR of OR akron",
       "phrase": "\"university of akron\"",
       "engines": {
+        "tin": {
+          "conjunction": "university AND of AND akron",
+          "disjunction": "university OR of OR akron",
+          "phrase": "\"university of akron\""
+        },
         "paradedb": {
           "conjunction": "university AND of AND akron",
           "disjunction": "university OR of OR akron",
@@ -6887,6 +8072,11 @@
       "disjunction": "the OR news OR journal",
       "phrase": "\"the news journal\"",
       "engines": {
+        "tin": {
+          "conjunction": "the AND news AND journal",
+          "disjunction": "the OR news OR journal",
+          "phrase": "\"the news journal\""
+        },
         "paradedb": {
           "conjunction": "the AND news AND journal",
           "disjunction": "the OR news OR journal",
@@ -6916,6 +8106,11 @@
       "disjunction": "cartoon OR network",
       "phrase": "\"cartoon network\"",
       "engines": {
+        "tin": {
+          "conjunction": "cartoon AND network",
+          "disjunction": "cartoon OR network",
+          "phrase": "\"cartoon network\""
+        },
         "paradedb": {
           "conjunction": "cartoon AND network",
           "disjunction": "cartoon OR network",
@@ -6945,6 +8140,11 @@
       "disjunction": "robert OR reed",
       "phrase": "\"robert reed\"",
       "engines": {
+        "tin": {
+          "conjunction": "robert AND reed",
+          "disjunction": "robert OR reed",
+          "phrase": "\"robert reed\""
+        },
         "paradedb": {
           "conjunction": "robert AND reed",
           "disjunction": "robert OR reed",
@@ -6974,6 +8174,11 @@
       "disjunction": "interracial OR love",
       "phrase": "\"interracial love\"",
       "engines": {
+        "tin": {
+          "conjunction": "interracial AND love",
+          "disjunction": "interracial OR love",
+          "phrase": "\"interracial love\""
+        },
         "paradedb": {
           "conjunction": "interracial AND love",
           "disjunction": "interracial OR love",
@@ -7003,6 +8208,11 @@
       "disjunction": "round OR table",
       "phrase": "\"round table\"",
       "engines": {
+        "tin": {
+          "conjunction": "round AND table",
+          "disjunction": "round OR table",
+          "phrase": "\"round table\""
+        },
         "paradedb": {
           "conjunction": "round AND table",
           "disjunction": "round OR table",
@@ -7032,6 +8242,11 @@
       "disjunction": "low OR estrogen",
       "phrase": "\"low estrogen\"",
       "engines": {
+        "tin": {
+          "conjunction": "low AND estrogen",
+          "disjunction": "low OR estrogen",
+          "phrase": "\"low estrogen\""
+        },
         "paradedb": {
           "conjunction": "low AND estrogen",
           "disjunction": "low OR estrogen",
@@ -7061,6 +8276,11 @@
       "disjunction": "akron OR beacon",
       "phrase": "\"akron beacon\"",
       "engines": {
+        "tin": {
+          "conjunction": "akron AND beacon",
+          "disjunction": "akron OR beacon",
+          "phrase": "\"akron beacon\""
+        },
         "paradedb": {
           "conjunction": "akron AND beacon",
           "disjunction": "akron OR beacon",
@@ -7090,6 +8310,11 @@
       "disjunction": "john OR wellington",
       "phrase": "\"john wellington\"",
       "engines": {
+        "tin": {
+          "conjunction": "john AND wellington",
+          "disjunction": "john OR wellington",
+          "phrase": "\"john wellington\""
+        },
         "paradedb": {
           "conjunction": "john AND wellington",
           "disjunction": "john OR wellington",
@@ -7119,6 +8344,11 @@
       "disjunction": "city OR in OR iran",
       "phrase": "\"city in iran\"",
       "engines": {
+        "tin": {
+          "conjunction": "city AND in AND iran",
+          "disjunction": "city OR in OR iran",
+          "phrase": "\"city in iran\""
+        },
         "paradedb": {
           "conjunction": "city AND in AND iran",
           "disjunction": "city OR in OR iran",
@@ -7148,6 +8378,11 @@
       "disjunction": "corpus OR christi OR tx",
       "phrase": "\"corpus christi tx\"",
       "engines": {
+        "tin": {
+          "conjunction": "corpus AND christi AND tx",
+          "disjunction": "corpus OR christi OR tx",
+          "phrase": "\"corpus christi tx\""
+        },
         "paradedb": {
           "conjunction": "corpus AND christi AND tx",
           "disjunction": "corpus OR christi OR tx",
@@ -7177,6 +8412,11 @@
       "disjunction": "becoming OR a OR widow",
       "phrase": "\"becoming a widow\"",
       "engines": {
+        "tin": {
+          "conjunction": "becoming AND a AND widow",
+          "disjunction": "becoming OR a OR widow",
+          "phrase": "\"becoming a widow\""
+        },
         "paradedb": {
           "conjunction": "becoming AND a AND widow",
           "disjunction": "becoming OR a OR widow",
@@ -7206,6 +8446,11 @@
       "disjunction": "king OR kalakaua",
       "phrase": "\"king kalakaua\"",
       "engines": {
+        "tin": {
+          "conjunction": "king AND kalakaua",
+          "disjunction": "king OR kalakaua",
+          "phrase": "\"king kalakaua\""
+        },
         "paradedb": {
           "conjunction": "king AND kalakaua",
           "disjunction": "king OR kalakaua",
@@ -7235,6 +8480,11 @@
       "disjunction": "centerville OR high OR school",
       "phrase": "\"centerville high school\"",
       "engines": {
+        "tin": {
+          "conjunction": "centerville AND high AND school",
+          "disjunction": "centerville OR high OR school",
+          "phrase": "\"centerville high school\""
+        },
         "paradedb": {
           "conjunction": "centerville AND high AND school",
           "disjunction": "centerville OR high OR school",
@@ -7264,6 +8514,11 @@
       "disjunction": "foam OR mattress",
       "phrase": "\"foam mattress\"",
       "engines": {
+        "tin": {
+          "conjunction": "foam AND mattress",
+          "disjunction": "foam OR mattress",
+          "phrase": "\"foam mattress\""
+        },
         "paradedb": {
           "conjunction": "foam AND mattress",
           "disjunction": "foam OR mattress",
@@ -7293,6 +8548,11 @@
       "disjunction": "music OR videos",
       "phrase": "\"music videos\"",
       "engines": {
+        "tin": {
+          "conjunction": "music AND videos",
+          "disjunction": "music OR videos",
+          "phrase": "\"music videos\""
+        },
         "paradedb": {
           "conjunction": "music AND videos",
           "disjunction": "music OR videos",
@@ -7322,6 +8582,11 @@
       "disjunction": "farmers OR almanac",
       "phrase": "\"farmers almanac\"",
       "engines": {
+        "tin": {
+          "conjunction": "farmers AND almanac",
+          "disjunction": "farmers OR almanac",
+          "phrase": "\"farmers almanac\""
+        },
         "paradedb": {
           "conjunction": "farmers AND almanac",
           "disjunction": "farmers OR almanac",
@@ -7351,6 +8616,11 @@
       "disjunction": "civil OR war OR battlefields",
       "phrase": "\"civil war battlefields\"",
       "engines": {
+        "tin": {
+          "conjunction": "civil AND war AND battlefields",
+          "disjunction": "civil OR war OR battlefields",
+          "phrase": "\"civil war battlefields\""
+        },
         "paradedb": {
           "conjunction": "civil AND war AND battlefields",
           "disjunction": "civil OR war OR battlefields",
@@ -7380,6 +8650,11 @@
       "disjunction": "national OR security OR cutter",
       "phrase": "\"national security cutter\"",
       "engines": {
+        "tin": {
+          "conjunction": "national AND security AND cutter",
+          "disjunction": "national OR security OR cutter",
+          "phrase": "\"national security cutter\""
+        },
         "paradedb": {
           "conjunction": "national AND security AND cutter",
           "disjunction": "national OR security OR cutter",
@@ -7409,6 +8684,11 @@
       "disjunction": "eastern OR mennonite OR university",
       "phrase": "\"eastern mennonite university\"",
       "engines": {
+        "tin": {
+          "conjunction": "eastern AND mennonite AND university",
+          "disjunction": "eastern OR mennonite OR university",
+          "phrase": "\"eastern mennonite university\""
+        },
         "paradedb": {
           "conjunction": "eastern AND mennonite AND university",
           "disjunction": "eastern OR mennonite OR university",
@@ -7438,6 +8718,11 @@
       "disjunction": "new OR york OR times OR best OR sellers OR list",
       "phrase": "\"new york times best sellers list\"",
       "engines": {
+        "tin": {
+          "conjunction": "new AND york AND times AND best AND sellers AND list",
+          "disjunction": "new OR york OR times OR best OR sellers OR list",
+          "phrase": "\"new york times best sellers list\""
+        },
         "paradedb": {
           "conjunction": "new AND york AND times AND best AND sellers AND list",
           "disjunction": "new OR york OR times OR best OR sellers OR list",
@@ -7467,6 +8752,11 @@
       "disjunction": "usb OR hub",
       "phrase": "\"usb hub\"",
       "engines": {
+        "tin": {
+          "conjunction": "usb AND hub",
+          "disjunction": "usb OR hub",
+          "phrase": "\"usb hub\""
+        },
         "paradedb": {
           "conjunction": "usb AND hub",
           "disjunction": "usb OR hub",
@@ -7496,6 +8786,11 @@
       "disjunction": "rob OR halford",
       "phrase": "\"rob halford\"",
       "engines": {
+        "tin": {
+          "conjunction": "rob AND halford",
+          "disjunction": "rob OR halford",
+          "phrase": "\"rob halford\""
+        },
         "paradedb": {
           "conjunction": "rob AND halford",
           "disjunction": "rob OR halford",
@@ -7525,6 +8820,11 @@
       "disjunction": "new OR york OR towns",
       "phrase": "\"new york towns\"",
       "engines": {
+        "tin": {
+          "conjunction": "new AND york AND towns",
+          "disjunction": "new OR york OR towns",
+          "phrase": "\"new york towns\""
+        },
         "paradedb": {
           "conjunction": "new AND york AND towns",
           "disjunction": "new OR york OR towns",
@@ -7554,6 +8854,11 @@
       "disjunction": "medal OR of OR honor",
       "phrase": "\"medal of honor\"",
       "engines": {
+        "tin": {
+          "conjunction": "medal AND of AND honor",
+          "disjunction": "medal OR of OR honor",
+          "phrase": "\"medal of honor\""
+        },
         "paradedb": {
           "conjunction": "medal AND of AND honor",
           "disjunction": "medal OR of OR honor",
@@ -7583,6 +8888,11 @@
       "disjunction": "hot OR springs OR south OR dakota",
       "phrase": "\"hot springs south dakota\"",
       "engines": {
+        "tin": {
+          "conjunction": "hot AND springs AND south AND dakota",
+          "disjunction": "hot OR springs OR south OR dakota",
+          "phrase": "\"hot springs south dakota\""
+        },
         "paradedb": {
           "conjunction": "hot AND springs AND south AND dakota",
           "disjunction": "hot OR springs OR south OR dakota",
@@ -7612,6 +8922,11 @@
       "disjunction": "home OR business",
       "phrase": "\"home business\"",
       "engines": {
+        "tin": {
+          "conjunction": "home AND business",
+          "disjunction": "home OR business",
+          "phrase": "\"home business\""
+        },
         "paradedb": {
           "conjunction": "home AND business",
           "disjunction": "home OR business",
@@ -7641,6 +8956,11 @@
       "disjunction": "perfume OR bottles",
       "phrase": "\"perfume bottles\"",
       "engines": {
+        "tin": {
+          "conjunction": "perfume AND bottles",
+          "disjunction": "perfume OR bottles",
+          "phrase": "\"perfume bottles\""
+        },
         "paradedb": {
           "conjunction": "perfume AND bottles",
           "disjunction": "perfume OR bottles",
@@ -7670,6 +8990,11 @@
       "disjunction": "old OR photos",
       "phrase": "\"old photos\"",
       "engines": {
+        "tin": {
+          "conjunction": "old AND photos",
+          "disjunction": "old OR photos",
+          "phrase": "\"old photos\""
+        },
         "paradedb": {
           "conjunction": "old AND photos",
           "disjunction": "old OR photos",
@@ -7699,6 +9024,11 @@
       "disjunction": "edith OR head",
       "phrase": "\"edith head\"",
       "engines": {
+        "tin": {
+          "conjunction": "edith AND head",
+          "disjunction": "edith OR head",
+          "phrase": "\"edith head\""
+        },
         "paradedb": {
           "conjunction": "edith AND head",
           "disjunction": "edith OR head",
@@ -7728,6 +9058,11 @@
       "disjunction": "danube OR river",
       "phrase": "\"danube river\"",
       "engines": {
+        "tin": {
+          "conjunction": "danube AND river",
+          "disjunction": "danube OR river",
+          "phrase": "\"danube river\""
+        },
         "paradedb": {
           "conjunction": "danube AND river",
           "disjunction": "danube OR river",
@@ -7757,6 +9092,11 @@
       "disjunction": "bladder OR tumor",
       "phrase": "\"bladder tumor\"",
       "engines": {
+        "tin": {
+          "conjunction": "bladder AND tumor",
+          "disjunction": "bladder OR tumor",
+          "phrase": "\"bladder tumor\""
+        },
         "paradedb": {
           "conjunction": "bladder AND tumor",
           "disjunction": "bladder OR tumor",
@@ -7786,6 +9126,11 @@
       "disjunction": "the OR british OR embassy",
       "phrase": "\"the british embassy\"",
       "engines": {
+        "tin": {
+          "conjunction": "the AND british AND embassy",
+          "disjunction": "the OR british OR embassy",
+          "phrase": "\"the british embassy\""
+        },
         "paradedb": {
           "conjunction": "the AND british AND embassy",
           "disjunction": "the OR british OR embassy",
@@ -7815,6 +9160,11 @@
       "disjunction": "human OR trafficking",
       "phrase": "\"human trafficking\"",
       "engines": {
+        "tin": {
+          "conjunction": "human AND trafficking",
+          "disjunction": "human OR trafficking",
+          "phrase": "\"human trafficking\""
+        },
         "paradedb": {
           "conjunction": "human AND trafficking",
           "disjunction": "human OR trafficking",
@@ -7844,6 +9194,11 @@
       "disjunction": "new OR england OR aquarium",
       "phrase": "\"new england aquarium\"",
       "engines": {
+        "tin": {
+          "conjunction": "new AND england AND aquarium",
+          "disjunction": "new OR england OR aquarium",
+          "phrase": "\"new england aquarium\""
+        },
         "paradedb": {
           "conjunction": "new AND england AND aquarium",
           "disjunction": "new OR england OR aquarium",
@@ -7873,6 +9228,11 @@
       "disjunction": "the OR book OR of OR life",
       "phrase": "\"the book of life\"",
       "engines": {
+        "tin": {
+          "conjunction": "the AND book AND of AND life",
+          "disjunction": "the OR book OR of OR life",
+          "phrase": "\"the book of life\""
+        },
         "paradedb": {
           "conjunction": "the AND book AND of AND life",
           "disjunction": "the OR book OR of OR life",
@@ -7902,6 +9262,11 @@
       "disjunction": "rolex OR watches",
       "phrase": "\"rolex watches\"",
       "engines": {
+        "tin": {
+          "conjunction": "rolex AND watches",
+          "disjunction": "rolex OR watches",
+          "phrase": "\"rolex watches\""
+        },
         "paradedb": {
           "conjunction": "rolex AND watches",
           "disjunction": "rolex OR watches",
@@ -7931,6 +9296,11 @@
       "disjunction": "water OR filters",
       "phrase": "\"water filters\"",
       "engines": {
+        "tin": {
+          "conjunction": "water AND filters",
+          "disjunction": "water OR filters",
+          "phrase": "\"water filters\""
+        },
         "paradedb": {
           "conjunction": "water AND filters",
           "disjunction": "water OR filters",
@@ -7960,6 +9330,11 @@
       "disjunction": "general OR motors",
       "phrase": "\"general motors\"",
       "engines": {
+        "tin": {
+          "conjunction": "general AND motors",
+          "disjunction": "general OR motors",
+          "phrase": "\"general motors\""
+        },
         "paradedb": {
           "conjunction": "general AND motors",
           "disjunction": "general OR motors",
@@ -7989,6 +9364,11 @@
       "disjunction": "the OR preakness",
       "phrase": "\"the preakness\"",
       "engines": {
+        "tin": {
+          "conjunction": "the AND preakness",
+          "disjunction": "the OR preakness",
+          "phrase": "\"the preakness\""
+        },
         "paradedb": {
           "conjunction": "the AND preakness",
           "disjunction": "the OR preakness",
@@ -8018,6 +9398,11 @@
       "disjunction": "blue OR ridge OR parkway",
       "phrase": "\"blue ridge parkway\"",
       "engines": {
+        "tin": {
+          "conjunction": "blue AND ridge AND parkway",
+          "disjunction": "blue OR ridge OR parkway",
+          "phrase": "\"blue ridge parkway\""
+        },
         "paradedb": {
           "conjunction": "blue AND ridge AND parkway",
           "disjunction": "blue OR ridge OR parkway",
@@ -8047,6 +9432,11 @@
       "disjunction": "elizabeth OR vargas",
       "phrase": "\"elizabeth vargas\"",
       "engines": {
+        "tin": {
+          "conjunction": "elizabeth AND vargas",
+          "disjunction": "elizabeth OR vargas",
+          "phrase": "\"elizabeth vargas\""
+        },
         "paradedb": {
           "conjunction": "elizabeth AND vargas",
           "disjunction": "elizabeth OR vargas",
@@ -8076,6 +9466,11 @@
       "disjunction": "canon OR powershot",
       "phrase": "\"canon powershot\"",
       "engines": {
+        "tin": {
+          "conjunction": "canon AND powershot",
+          "disjunction": "canon OR powershot",
+          "phrase": "\"canon powershot\""
+        },
         "paradedb": {
           "conjunction": "canon AND powershot",
           "disjunction": "canon OR powershot",
@@ -8105,6 +9500,11 @@
       "disjunction": "air OR mattress",
       "phrase": "\"air mattress\"",
       "engines": {
+        "tin": {
+          "conjunction": "air AND mattress",
+          "disjunction": "air OR mattress",
+          "phrase": "\"air mattress\""
+        },
         "paradedb": {
           "conjunction": "air AND mattress",
           "disjunction": "air OR mattress",
@@ -8134,6 +9534,11 @@
       "disjunction": "pocket OR pc",
       "phrase": "\"pocket pc\"",
       "engines": {
+        "tin": {
+          "conjunction": "pocket AND pc",
+          "disjunction": "pocket OR pc",
+          "phrase": "\"pocket pc\""
+        },
         "paradedb": {
           "conjunction": "pocket AND pc",
           "disjunction": "pocket OR pc",
@@ -8163,6 +9568,11 @@
       "disjunction": "chicago OR public OR schools",
       "phrase": "\"chicago public schools\"",
       "engines": {
+        "tin": {
+          "conjunction": "chicago AND public AND schools",
+          "disjunction": "chicago OR public OR schools",
+          "phrase": "\"chicago public schools\""
+        },
         "paradedb": {
           "conjunction": "chicago AND public AND schools",
           "disjunction": "chicago OR public OR schools",
@@ -8192,6 +9602,11 @@
       "disjunction": "george OR r OR brown OR convention OR center",
       "phrase": "\"george r brown convention center\"",
       "engines": {
+        "tin": {
+          "conjunction": "george AND r AND brown AND convention AND center",
+          "disjunction": "george OR r OR brown OR convention OR center",
+          "phrase": "\"george r brown convention center\""
+        },
         "paradedb": {
           "conjunction": "george AND r AND brown AND convention AND center",
           "disjunction": "george OR r OR brown OR convention OR center",
@@ -8221,6 +9636,11 @@
       "disjunction": "warren OR county",
       "phrase": "\"warren county\"",
       "engines": {
+        "tin": {
+          "conjunction": "warren AND county",
+          "disjunction": "warren OR county",
+          "phrase": "\"warren county\""
+        },
         "paradedb": {
           "conjunction": "warren AND county",
           "disjunction": "warren OR county",
@@ -8250,6 +9670,11 @@
       "disjunction": "animal OR rights",
       "phrase": "\"animal rights\"",
       "engines": {
+        "tin": {
+          "conjunction": "animal AND rights",
+          "disjunction": "animal OR rights",
+          "phrase": "\"animal rights\""
+        },
         "paradedb": {
           "conjunction": "animal AND rights",
           "disjunction": "animal OR rights",
@@ -8279,6 +9704,11 @@
       "disjunction": "david OR lee OR roth",
       "phrase": "\"david lee roth\"",
       "engines": {
+        "tin": {
+          "conjunction": "david AND lee AND roth",
+          "disjunction": "david OR lee OR roth",
+          "phrase": "\"david lee roth\""
+        },
         "paradedb": {
           "conjunction": "david AND lee AND roth",
           "disjunction": "david OR lee OR roth",
@@ -8308,6 +9738,11 @@
       "disjunction": "central OR community OR college",
       "phrase": "\"central community college\"",
       "engines": {
+        "tin": {
+          "conjunction": "central AND community AND college",
+          "disjunction": "central OR community OR college",
+          "phrase": "\"central community college\""
+        },
         "paradedb": {
           "conjunction": "central AND community AND college",
           "disjunction": "central OR community OR college",
@@ -8337,6 +9772,11 @@
       "disjunction": "power OR rangers OR ninja OR storm",
       "phrase": "\"power rangers ninja storm\"",
       "engines": {
+        "tin": {
+          "conjunction": "power AND rangers AND ninja AND storm",
+          "disjunction": "power OR rangers OR ninja OR storm",
+          "phrase": "\"power rangers ninja storm\""
+        },
         "paradedb": {
           "conjunction": "power AND rangers AND ninja AND storm",
           "disjunction": "power OR rangers OR ninja OR storm",
@@ -8366,6 +9806,11 @@
       "disjunction": "movie OR theatres",
       "phrase": "\"movie theatres\"",
       "engines": {
+        "tin": {
+          "conjunction": "movie AND theatres",
+          "disjunction": "movie OR theatres",
+          "phrase": "\"movie theatres\""
+        },
         "paradedb": {
           "conjunction": "movie AND theatres",
           "disjunction": "movie OR theatres",
@@ -8395,6 +9840,11 @@
       "disjunction": "canary OR bird",
       "phrase": "\"canary bird\"",
       "engines": {
+        "tin": {
+          "conjunction": "canary AND bird",
+          "disjunction": "canary OR bird",
+          "phrase": "\"canary bird\""
+        },
         "paradedb": {
           "conjunction": "canary AND bird",
           "disjunction": "canary OR bird",
@@ -8424,6 +9874,11 @@
       "disjunction": "health OR literacy",
       "phrase": "\"health literacy\"",
       "engines": {
+        "tin": {
+          "conjunction": "health AND literacy",
+          "disjunction": "health OR literacy",
+          "phrase": "\"health literacy\""
+        },
         "paradedb": {
           "conjunction": "health AND literacy",
           "disjunction": "health OR literacy",
@@ -8453,6 +9908,11 @@
       "disjunction": "david OR thornton",
       "phrase": "\"david thornton\"",
       "engines": {
+        "tin": {
+          "conjunction": "david AND thornton",
+          "disjunction": "david OR thornton",
+          "phrase": "\"david thornton\""
+        },
         "paradedb": {
           "conjunction": "david AND thornton",
           "disjunction": "david OR thornton",
@@ -8482,6 +9942,11 @@
       "disjunction": "jamie OR murray",
       "phrase": "\"jamie murray\"",
       "engines": {
+        "tin": {
+          "conjunction": "jamie AND murray",
+          "disjunction": "jamie OR murray",
+          "phrase": "\"jamie murray\""
+        },
         "paradedb": {
           "conjunction": "jamie AND murray",
           "disjunction": "jamie OR murray",
@@ -8511,6 +9976,11 @@
       "disjunction": "boulder OR city OR nevada",
       "phrase": "\"boulder city nevada\"",
       "engines": {
+        "tin": {
+          "conjunction": "boulder AND city AND nevada",
+          "disjunction": "boulder OR city OR nevada",
+          "phrase": "\"boulder city nevada\""
+        },
         "paradedb": {
           "conjunction": "boulder AND city AND nevada",
           "disjunction": "boulder OR city OR nevada",
@@ -8540,6 +10010,11 @@
       "disjunction": "united OR states OR constitution",
       "phrase": "\"united states constitution\"",
       "engines": {
+        "tin": {
+          "conjunction": "united AND states AND constitution",
+          "disjunction": "united OR states OR constitution",
+          "phrase": "\"united states constitution\""
+        },
         "paradedb": {
           "conjunction": "united AND states AND constitution",
           "disjunction": "united OR states OR constitution",
@@ -8569,6 +10044,11 @@
       "disjunction": "niceville OR high OR school",
       "phrase": "\"niceville high school\"",
       "engines": {
+        "tin": {
+          "conjunction": "niceville AND high AND school",
+          "disjunction": "niceville OR high OR school",
+          "phrase": "\"niceville high school\""
+        },
         "paradedb": {
           "conjunction": "niceville AND high AND school",
           "disjunction": "niceville OR high OR school",
@@ -8598,6 +10078,11 @@
       "disjunction": "sleep OR study",
       "phrase": "\"sleep study\"",
       "engines": {
+        "tin": {
+          "conjunction": "sleep AND study",
+          "disjunction": "sleep OR study",
+          "phrase": "\"sleep study\""
+        },
         "paradedb": {
           "conjunction": "sleep AND study",
           "disjunction": "sleep OR study",
@@ -8627,6 +10112,11 @@
       "disjunction": "true OR religion",
       "phrase": "\"true religion\"",
       "engines": {
+        "tin": {
+          "conjunction": "true AND religion",
+          "disjunction": "true OR religion",
+          "phrase": "\"true religion\""
+        },
         "paradedb": {
           "conjunction": "true AND religion",
           "disjunction": "true OR religion",
@@ -8656,6 +10146,11 @@
       "disjunction": "google OR satellite",
       "phrase": "\"google satellite\"",
       "engines": {
+        "tin": {
+          "conjunction": "google AND satellite",
+          "disjunction": "google OR satellite",
+          "phrase": "\"google satellite\""
+        },
         "paradedb": {
           "conjunction": "google AND satellite",
           "disjunction": "google OR satellite",
@@ -8685,6 +10180,11 @@
       "disjunction": "laborers OR international OR union OR of OR north OR america",
       "phrase": "\"laborers international union of north america\"",
       "engines": {
+        "tin": {
+          "conjunction": "laborers AND international AND union AND of AND north AND america",
+          "disjunction": "laborers OR international OR union OR of OR north OR america",
+          "phrase": "\"laborers international union of north america\""
+        },
         "paradedb": {
           "conjunction": "laborers AND international AND union AND of AND north AND america",
           "disjunction": "laborers OR international OR union OR of OR north OR america",
@@ -8714,6 +10214,11 @@
       "disjunction": "to OR be OR or OR not OR to OR be",
       "phrase": "\"to be or not to be\"",
       "engines": {
+        "tin": {
+          "conjunction": "to AND be AND or AND not AND to AND be",
+          "disjunction": "to OR be OR or OR not OR to OR be",
+          "phrase": "\"to be or not to be\""
+        },
         "paradedb": {
           "conjunction": "to AND be AND or AND not AND to AND be",
           "disjunction": "to OR be OR or OR not OR to OR be",
@@ -8743,6 +10248,11 @@
       "disjunction": "a OR search OR engine OR is OR an OR information OR retrieval OR software OR system OR designed OR to OR help OR find OR information OR stored OR on OR one OR or OR more OR computer OR systems",
       "phrase": "\"a search engine is an information retrieval software system designed to help find information stored on one or more computer systems\"",
       "engines": {
+        "tin": {
+          "conjunction": "a AND search AND engine AND is AND an AND information AND retrieval AND software AND system AND designed AND to AND help AND find AND information AND stored AND on AND one AND or AND more AND computer AND systems",
+          "disjunction": "a OR search OR engine OR is OR an OR information OR retrieval OR software OR system OR designed OR to OR help OR find OR information OR stored OR on OR one OR or OR more OR computer OR systems",
+          "phrase": "\"a search engine is an information retrieval software system designed to help find information stored on one or more computer systems\""
+        },
         "paradedb": {
           "conjunction": "a AND search AND engine AND is AND an AND information AND retrieval AND software AND system AND designed AND to AND help AND find AND information AND stored AND on AND one AND or AND more AND computer AND systems",
           "disjunction": "a OR search OR engine OR is OR an OR information OR retrieval OR software OR system OR designed OR to OR help OR find OR information OR stored OR on OR one OR or OR more OR computer OR systems",

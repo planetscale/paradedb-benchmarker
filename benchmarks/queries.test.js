@@ -42,7 +42,7 @@ test("paced updates require supported backends without changing query-only selec
   assert.throws(() => selectBackends("pg_textsearch", "count", "mixed", 10), /only WORKLOAD=topk/);
 });
 
-test("query traces retain their selected record counts and supported engine forms", () => {
+test("query traces retain their selected record counts and engine forms", () => {
   for (const [dataset, expected] of [
     ["wikipedia", 302],
     ["stackexchange", 1254],
@@ -51,6 +51,7 @@ test("query traces retain their selected record counts and supported engine form
     assert.equal(contents.queries.length, expected);
     for (const record of contents.queries) {
       assert.deepEqual(Object.keys(record.engines), [
+        "tin",
         "paradedb",
         "pg_textsearch",
         "postgres",
