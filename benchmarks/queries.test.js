@@ -8,10 +8,10 @@ import {
   selectQueries,
 } from "./queries.js";
 
-const load = (dataset, filename = "queries.json") =>
+const load = (dataset) =>
   JSON.parse(
     readFileSync(
-      new URL(`../datasets/${dataset}/${filename}`, import.meta.url),
+      new URL(`../datasets/${dataset}/queries.json`, import.meta.url),
       "utf8",
     ),
   );
@@ -69,10 +69,6 @@ test("query traces retain their selected record counts and supported engine form
       assert.equal(value, entry.record.engines.pg_textsearch.disjunction);
     }
   }
-  assert.equal(
-    load("stackexchange", "queries.shortened.json").queries.length,
-    573,
-  );
 });
 
 test("mixed styles preserve identity even when single-term query strings coincide", () => {

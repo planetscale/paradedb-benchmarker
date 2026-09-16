@@ -68,10 +68,7 @@ JSON conversion encoded each engine's query syntax without further
 tokenization, stemming, or stopword filtering. Empty queries and queries longer
 than 15 whitespace-separated terms were removed.
 
-- [queries.json](datasets/stackexchange/queries.json) contains **1,254 queries**.
-- [queries.shortened.json](datasets/stackexchange/queries.shortened.json)
-  contains a **573-query subset**. Its `source.selection` metadata records the
-  selection seed (`118538803`), algorithm, and counts by query length.
+[queries.json](datasets/stackexchange/queries.json) contains **1,254 queries**.
 
 The archives' bundled `license.txt` describes the dump as a whole as
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), with individual

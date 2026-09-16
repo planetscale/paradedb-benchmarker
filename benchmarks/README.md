@@ -247,14 +247,6 @@ The source body text and IDs are preserved during archive creation.
 
 - Wikipedia's `queries.json` contains all 302 existing queries.
 - Stack Exchange's `queries.json` contains the existing 1,254 queries.
-- Stack Exchange's `queries.shortened.json` preserves the 573-query subset and
-  its recorded sampling seed and target counts by length.
-
-```bash
-make -f Makefile.stackexchange run \
-  WORKLOAD=topk QUERY_STYLE=disjunction BACKENDS=paradedb,postgres \
-  QUERIES="$PWD/datasets/stackexchange/queries.shortened.json"
-```
 
 The files contain engine forms for ParadeDB, pg_textsearch, PostgreSQL, and
 Elasticsearch. Compression and backend filtering do not resample the queries
