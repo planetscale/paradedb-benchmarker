@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout Git Repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Lint Markdown
         uses: paradedb/actions/lint-markdown@v12
